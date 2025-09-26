@@ -34,6 +34,7 @@ export interface Product {
   price: number;
   originalPrice?: number;
   description?: string;
+  imageUrl?: string;
   availableFrom?: string;
   availableUntil: string;
   code?: string;
@@ -52,30 +53,36 @@ export interface Seller {
   phoneNumber: string;
   businessName: string;
   businessType: BusinessType;
-  location?: Location;
-  opensAt?: number;
-  closesAt?: number;
-  status: 'pending' | 'approved' | 'rejected' | 'blocked';
-  language: 'uz' | 'ru';
-  imageUrl?: string;
+  location: Location;
+  opensAt: number;
+  closesAt: number;
+  status: string;
+  language: string;
   businessImageUrl?: string;
   verificationStatus: SellerVerificationStatus;
-  verificationDocuments?: string[];
   createdAt: string;
   updatedAt: string;
-  products?: Product[];
-  distance?: number | null;
+  distance?: number;
   isOpen?: boolean;
   averageRating?: number;
+}
+
+export interface Rating {
+  id: number;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+  user: User;
+  product: Product;
 }
 
 export interface User {
   id: number;
   telegramId: string;
-  phoneNumber: string;
-  location?: Location;
-  language: 'uz' | 'ru';
-  notificationSettings?: NotificationSettings;
+  firstName: string;
+  lastName?: string;
+  username?: string;
+  language: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -83,32 +90,32 @@ export interface User {
 export interface Order {
   id: number;
   code: string;
-  status: 'pending' | 'completed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   totalPrice: number;
   quantity: number;
   createdAt: string;
-  updatedAt: string;
-  user: User;
   product: Product;
 }
 
-export interface Rating {
-  id: number;
-  rating: number;
-  comment?: string;
-  type: 'product' | 'seller';
-  createdAt: string;
-  updatedAt: string;
-  user: User;
-  product?: Product;
-  seller?: Seller;
+export interface CreateProductDto {
+  description: string;
+  price: number;
+  originalPrice?: number;
+  quantity: number;
+  availableUntil: Date;
+  availableFrom?: Date;
+  category: ProductCategory;
+  sellerId: number;
 }
 
-export interface CreateUserDto {
-  telegramId: string;
-  phoneNumber: string;
-  location?: Location;
-  language: 'uz' | 'ru';
+export interface UpdateProductDto {
+  description?: string;
+  price?: number;
+  originalPrice?: number;
+  quantity?: number;
+  availableUntil?: Date;
+  availableFrom?: Date;
+  category?: ProductCategory;
 }
 
 export interface CreateSellerDto {
@@ -116,83 +123,54 @@ export interface CreateSellerDto {
   phoneNumber: string;
   businessName: string;
   businessType: BusinessType;
+  location: Location;
+  opensAt: number;
+  closesAt: number;
+  language: string;
+}
+
+export interface UpdateSellerDto {
+  phoneNumber?: string;
+  businessName?: string;
+  businessType?: BusinessType;
   location?: Location;
   opensAt?: number;
   closesAt?: number;
-  language: 'uz' | 'ru';
-  status?: 'pending' | 'approved' | 'rejected' | 'blocked';
-  imageUrl?: string;
-  businessImageUrl?: string;
+  language?: string;
 }
 
-export interface CreateProductDto {
-  price: number;
-  originalPrice?: number;
-  description?: string;
-  availableFrom?: Date;
-  availableUntil: Date;
-  quantity?: number;
-  category?: ProductCategory;
-  sellerId: number;
+export interface CreateUserDto {
+  telegramId: string;
+  firstName: string;
+  lastName?: string;
+  username?: string;
+  language: string;
+}
+
+export interface UpdateUserDto {
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  language?: string;
 }
 
 export interface CreateOrderDto {
   productId: number;
   quantity: number;
+  totalPrice: number;
+}
+
+export interface UpdateOrderDto {
+  status?: 'pending' | 'confirmed' | 'completed' | 'cancelled';
 }
 
 export interface CreateRatingDto {
+  productId: number;
   rating: number;
   comment?: string;
-  type: 'product' | 'seller';
-  productId?: number;
-  sellerId?: number;
 }
 
-export interface AnalyticsData {
-  totalProducts: number;
-  totalOrders: number;
-  totalRevenue: number;
-  averageRating: number;
-  monthlyStats: Array<{
-    month: string;
-    products: number;
-    orders: number;
-    revenue: number;
-  }>;
-  topProducts: Array<{
-    id: number;
-    name: string;
-    orders: number;
-    revenue: number;
-  }>;
-}
-
-export interface NotificationSettings {
-  newProducts: boolean;
-  orderUpdates: boolean;
-  promotions: boolean;
-  sellerUpdates: boolean;
-}
-
-export interface SearchFilters {
-  category?: ProductCategory;
-  businessType?: BusinessType;
-  priceRange?: {
-    min: number;
-    max: number;
-  };
-  distance?: number;
+export interface UpdateRatingDto {
   rating?: number;
-  availability?: 'now' | 'today' | 'all';
-}
-
-export interface NotificationData {
-  id: number;
-  title: string;
-  message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  isRead: boolean;
-  createdAt: string;
-  data?: any;
+  comment?: string;
 }

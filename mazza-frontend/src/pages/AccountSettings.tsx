@@ -1,11 +1,13 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Phone, MapPin, Save } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Save } from 'lucide-react';
 import BottomNavigation from '../components/BottomNavigation';
 import { useTelegram } from '../contexts/TelegramContext';
+import { useLocalization } from '../contexts/LocalizationContext';
 
 const AccountSettings: React.FC = () => {
   const { user } = useTelegram();
+  const { language, setLanguage, t } = useLocalization();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -18,11 +20,21 @@ const AccountSettings: React.FC = () => {
     email: '',
     phone: '',
     location: 'Tashkent, Uzbekistan',
-    language: 'uz'
+    language: language
   });
+
+  // Update form language when context language changes
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, language }));
+  }, [language]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // If language is changed, update the context immediately
+    if (field === 'language') {
+      setLanguage(value as 'uz' | 'ru');
+    }
   };
 
   const handleSave = async () => {
@@ -53,7 +65,7 @@ const AccountSettings: React.FC = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="text-lg font-semibold text-gray-900">Account Settings</h1>
+            <h1 className="text-lg font-semibold text-gray-900">{t('accountSettings')}</h1>
           </div>
         </div>
       </div>
@@ -62,10 +74,10 @@ const AccountSettings: React.FC = () => {
       <div className="p-4 space-y-6">
         {/* Personal Information */}
         <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('personalInformation')}</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('firstName')}</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -78,7 +90,7 @@ const AccountSettings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('lastName')}</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -91,7 +103,7 @@ const AccountSettings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('username')}</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -107,10 +119,10 @@ const AccountSettings: React.FC = () => {
 
         {/* Contact Information */}
         <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('contactInformation')}</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('email')}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -124,7 +136,7 @@ const AccountSettings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('phone')}</label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -138,9 +150,9 @@ const AccountSettings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('location')}</label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
                   value={formData.location}
@@ -154,18 +166,17 @@ const AccountSettings: React.FC = () => {
 
         {/* Preferences */}
         <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Preferences</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('preferences')}</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('language')}</label>
               <select
                 value={formData.language}
                 onChange={(e) => handleInputChange('language', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
-                <option value="uz">O'zbekcha</option>
-                <option value="ru">Русский</option>
-                <option value="en">English</option>
+                <option value="uz">{t('uzbek')}</option>
+                <option value="ru">{t('russian')}</option>
               </select>
             </div>
           </div>
@@ -179,12 +190,12 @@ const AccountSettings: React.FC = () => {
             className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center"
           >
             <Save className="w-5 h-5 mr-2" />
-            {loading ? 'Saving...' : 'Save Changes'}
+            {loading ? t('saving') : t('saveChanges')}
           </button>
           
           {saved && (
             <div className="mt-3 p-3 bg-green-100 text-green-800 rounded-lg text-sm text-center">
-              Settings saved successfully!
+              {t('settingsSavedSuccessfully')}
             </div>
           )}
         </div>

@@ -43,10 +43,17 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     username: 'testuser',
     language_code: 'uz'
   });
-  const [initData, setInitData] = useState<string | null>('test_init_data');
+  const [initData, setInitData] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(true);
   const [webApp, setWebApp] = useState<any>(null);
-  const [userRole, setUserRole] = useState<'user' | 'seller' | 'admin'>('user');
+  const [userRole, setUserRoleState] = useState<'user' | 'seller' | 'admin'>('user');
+
+  // Enhanced setUserRole function that properly updates state
+  const setUserRole = (role: 'user' | 'seller' | 'admin') => {
+    console.log('TelegramContext: Setting user role to:', role);
+    setUserRoleState(role);
+    localStorage.setItem('userRole', role);
+  };
 
   useEffect(() => {
     console.log('TelegramContext: Initializing...');
@@ -79,11 +86,12 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             const roleFromUrl = urlParams.get('role') as 'user' | 'seller' | 'admin';
             if (roleFromUrl) {
               setUserRole(roleFromUrl);
-              localStorage.setItem('userRole', roleFromUrl);
             } else {
               // Check localStorage for development
               const savedRole = localStorage.getItem('userRole') as 'user' | 'seller' | 'admin';
-              setUserRole(savedRole || 'user');
+              if (savedRole) {
+                setUserRole(savedRole);
+              }
             }
           } catch (error) {
             console.error('Error parsing user data:', error);
@@ -93,18 +101,32 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       setIsReady(true);
     } else {
-      // For development/testing in browser - users are pre-registered
+      // For development/testing in browser - create mock initData
       console.log('TelegramContext: Running in browser development mode');
       console.log('TelegramContext: User already set to:', user);
       
+      // Create mock initData for development with proper authentication
+      const mockUser = {
+        id: 123456789,
+        first_name: 'Test',
+        last_name: 'User',
+        username: 'testuser',
+        language_code: 'uz'
+      };
+      
+      const mockInitData = `user=${encodeURIComponent(JSON.stringify(mockUser))}&auth_date=${Math.floor(Date.now() / 1000)}&hash=mock_hash_for_development`;
+      setInitData(mockInitData);
+      
       // Check role from localStorage for development
       const savedRole = localStorage.getItem('userRole') as 'user' | 'seller' | 'admin';
-      setUserRole(savedRole || 'user');
+      if (savedRole) {
+        setUserRole(savedRole);
+      }
       console.log('TelegramContext: User role set to:', savedRole || 'user');
     }
   }, []);
 
-  console.log('TelegramContext: Current state - user:', user, 'isReady:', isReady);
+  console.log('TelegramContext: Current state - user:', user, 'userRole:', userRole, 'isReady:', isReady);
 
   return (
     <TelegramContext.Provider value={{ 

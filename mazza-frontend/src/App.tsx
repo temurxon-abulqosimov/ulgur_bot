@@ -13,12 +13,15 @@ import SellerDetail from './pages/SellerDetail';
 
 // Settings pages
 import AccountSettings from './pages/AccountSettings';
-import PrivacySettings from './pages/PrivacySettings';
 
 // Dashboard pages
 import UserDashboard from './pages/UserDashboard';
 import SellerDashboard from './pages/SellerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+
+// Product management pages
+import ProductCreate from './pages/ProductCreate';
+import ProductEdit from './pages/ProductEdit';
 
 // Components
 import RoleBasedRedirect from './components/RoleBasedRedirect';
@@ -45,6 +48,8 @@ function App() {
               <Route path="/seller" element={<SellerDashboard />} />
               <Route path="/seller/orders" element={<Orders />} />
               <Route path="/seller/profile" element={<Profile />} />
+              <Route path="/seller/products/create" element={<ProductCreate />} />
+              <Route path="/seller/products/edit/:id" element={<ProductEdit />} />
               
               {/* Admin routes - Platform management */}
               <Route path="/admin" element={<AdminDashboard />} />
@@ -53,7 +58,6 @@ function App() {
               
               {/* Settings routes */}
               <Route path="/settings/account" element={<AccountSettings />} />
-              <Route path="/settings/privacy" element={<PrivacySettings />} />
               
               {/* Shared routes - Available to all roles */}
               <Route path="/product/:id" element={<ProductDetail />} />

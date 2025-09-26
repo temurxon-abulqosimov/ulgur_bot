@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Search, ShoppingBag, User } from 'lucide-react';
+import { useLocalization } from '../contexts/LocalizationContext';
 
 interface BottomNavigationProps {
   currentPage: string;
@@ -9,12 +10,13 @@ interface BottomNavigationProps {
 const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentPage }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLocalization();
 
   const navItems = [
-    { id: 'home', label: 'Home', icon: Home, path: '/' },
-    { id: 'search', label: 'Search', icon: Search, path: '/search' },
-    { id: 'orders', label: 'Orders', icon: ShoppingBag, path: '/orders' },
-    { id: 'profile', label: 'Profile', icon: User, path: '/profile' },
+    { id: 'home', label: t('home'), icon: Home, path: '/' },
+    { id: 'search', label: t('search'), icon: Search, path: '/search' },
+    { id: 'orders', label: t('orders'), icon: ShoppingBag, path: '/orders' },
+    { id: 'profile', label: t('profile'), icon: User, path: '/profile' },
   ];
 
   return (

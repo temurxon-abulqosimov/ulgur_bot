@@ -1,214 +1,290 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Filter, Search } from 'lucide-react';
-import BottomNavigation from '../components/BottomNavigation';
-import ProductCard from '../components/ProductCard';
-import CategoryFilter from '../components/CategoryFilter';
-import MissionCard from '../components/MissionCard';
-import { sellersApi, usersApi } from '../services/api';
-import { Product, Seller, BusinessType } from '../types';
+import { 
+  ShoppingBag, 
+  Package, 
+  Star, 
+  MapPin, 
+  Clock,
+  Search,
+  Filter,
+  Heart,
+  ShoppingCart
+} from 'lucide-react';
 import { useTelegram } from '../contexts/TelegramContext';
+import { productsApi, sellersApi } from '../services/api';
+import { Product, Seller } from '../types';
 
 const Home: React.FC = () => {
-  const { user, webApp, isReady } = useTelegram();
   const navigate = useNavigate();
+  const { user, isReady } = useTelegram();
   const [products, setProducts] = useState<Product[]>([]);
+  const [sellers, setSellers] = useState<Seller[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<BusinessType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-
-  // Get user location
-  useEffect(() => {
-    if (webApp?.initDataUnsafe?.user?.id) {
-      // Mock location for demo - in real app, get from Telegram WebApp
-      const mockLat = 41.3111 + (Math.random() - 0.5) * 0.01;
-      const mockLng = 69.2797 + (Math.random() - 0.5) * 0.01;
-      setUserLocation({ lat: mockLat, lng: mockLng });
-    }
-  }, [webApp]);
-
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      let fetchedSellers: Seller[] = [];
-      
-      if (userLocation) {
-        fetchedSellers = (await sellersApi.getNearbySellers(userLocation.lat, userLocation.lng)).data;
-      } else {
-        fetchedSellers = (await sellersApi.getSellers()).data;
-      }
-
-      // Get products from all sellers
-      let allProducts: Product[] = [];
-      for (const seller of fetchedSellers) {
-        if (seller.products) {
-          allProducts = allProducts.concat(
-            seller.products.map(p => ({ 
-              ...p, 
-              seller: {
-                ...seller,
-                distance: calculateDistance(userLocation, seller.location)
-              }
-            }))
-          );
-        }
-      }
-
-      setProducts(allProducts);
-    } catch (err) {
-      console.error('Failed to fetch data:', err);
-      setError('Failed to load products and sellers.');
-    } finally {
-      setLoading(false);
-    }
-  }, [userLocation]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
-    if (isReady) {
-      loadData();
+    if (isReady && user) {
+      loadHomeData();
     }
-  }, [isReady, loadData]);
+  }, [isReady, user]);
 
-  const calculateDistance = (userLoc: { lat: number; lng: number } | null, sellerLoc: { latitude: number; longitude: number } | null | undefined) => {
-    if (!userLoc || !sellerLoc) return null;
-    
+  const calculateDistance = (userLocation: { lat: number; lng: number }, sellerLocation: { latitude: number; longitude: number }) => {
     const R = 6371; // Earth's radius in kilometers
-    const dLat = (sellerLoc.latitude - userLoc.lat) * Math.PI / 180;
-    const dLng = (sellerLoc.longitude - userLoc.lng) * Math.PI / 180;
+    const dLat = (sellerLocation.latitude - userLocation.lat) * Math.PI / 180;
+    const dLng = (sellerLocation.longitude - userLocation.lng) * Math.PI / 180;
     const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(userLoc.lat * Math.PI / 180) * Math.cos(sellerLoc.latitude * Math.PI / 180) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
+      Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(sellerLocation.latitude * Math.PI / 180) *
+      Math.sin(dLng/2) * Math.sin(dLng/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
   };
 
-  const handleCategoryChange = (category: BusinessType | 'all') => {
-    setSelectedCategory(category);
+  const loadHomeData = async () => {
+    try {
+      setLoading(true);
+      
+      // Get user location (mock for now)
+      const userLocation = { lat: 41.3111, lng: 69.2797 };
+      
+      // Get sellers and products
+      const [sellersResponse, productsResponse] = await Promise.all([
+        sellersApi.getSellers(),
+        productsApi.getProducts()
+      ]);
+
+      const fetchedSellers = sellersResponse.data;
+      const fetchedProducts = productsResponse.data;
+
+      // Add distance to sellers
+      const sellersWithDistance = fetchedSellers.map((seller: Seller) => ({
+        ...seller,
+        distance: calculateDistance(userLocation, seller.location)
+      }));
+
+      // Add distance to products
+      const productsWithDistance = fetchedProducts.map((product: Product) => ({
+        ...product,
+        seller: {
+          ...product.seller,
+          distance: calculateDistance(userLocation, product.seller.location)
+        }
+      }));
+
+      setSellers(sellersWithDistance);
+      setProducts(productsWithDistance);
+    } catch (err) {
+      console.error('Failed to load home data:', err);
+      setError('Failed to load home data');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === 'all' || product.seller.businessType === selectedCategory;
-    const matchesSearch = searchQuery === '' || 
-      product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.seller.businessName.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  const handleProductClick = (product: Product) => {
-    // Users are pre-registered, so no need to check registration
-    navigate(`/product/${product.id}`);
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    try {
+      setLoading(true);
+      const response = await productsApi.searchProducts(searchQuery, selectedCategory);
+      setProducts(response.data || []);
+    } catch (err) {
+      console.error('Search failed:', err);
+      setError('Search failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSellerClick = (seller: Seller) => {
-    navigate(`/seller-detail/${seller.id}`);
+  const handleProductClick = (productId: number) => {
+    navigate(`/product/${productId}`);
   };
+
+  const handleSellerClick = (sellerId: number) => {
+    navigate(`/seller-detail/${sellerId}`);
+  };
+
+  const categories = [
+    { value: 'all', label: 'All Categories' },
+    { value: 'bakery', label: 'Bakery' },
+    { value: 'restaurant', label: 'Restaurant' },
+    { value: 'cafe', label: 'Cafe' },
+    { value: 'grocery', label: 'Grocery' },
+  ];
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={loadHomeData}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="px-4 py-4">
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-md mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center mr-3">
-                <span className="text-white font-bold text-xl">M</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Mazza</h1>
-                <p className="text-sm text-gray-600">Save food near you</p>
-              </div>
-            </div>
-            <button className="flex items-center px-3 py-2 bg-gray-100 rounded-full text-sm">
-              <MapPin className="w-4 h-4 mr-1" />
-              <span>Location</span>
+            <h1 className="text-lg font-semibold text-gray-900">Discover</h1>
+            <button
+              onClick={() => navigate('/search')}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <Search className="w-5 h-5 text-gray-600" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="px-4 py-3 bg-white border-b">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search products or sellers..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-          />
+      <div className="bg-white px-4 py-3 border-b">
+        <div className="max-w-md mx-auto">
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            />
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+            >
+              Search
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Category Filter */}
-      <CategoryFilter
-        selectedCategory={selectedCategory}
-        onCategoryChange={handleCategoryChange}
-      />
-
-      {/* Mission Card */}
-      <div className="px-4 py-4">
-        <MissionCard />
+      <div className="bg-white px-4 py-3 border-b">
+        <div className="max-w-md mx-auto">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+          >
+            {categories.map((category) => (
+              <option key={category.value} value={category.value}>
+                {category.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Products Section */}
-      <div className="px-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Available now</h2>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-500">{filteredProducts.length} items</span>
-            <button className="p-2 bg-gray-100 rounded-lg">
-              <Filter className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {error && (
-          <div className="text-center py-8">
-            <p className="text-red-500">{error}</p>
-            <button 
-              onClick={loadData}
-              className="mt-2 px-4 py-2 bg-orange-500 text-white rounded-lg"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
-        {!loading && !error && filteredProducts.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No products found for this category.</p>
-          </div>
-        )}
-
+      {/* Content */}
+      <div className="max-w-md mx-auto p-4">
+        {/* Featured Products */}
         <div className="space-y-4">
-          {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              distance={product.seller.distance}
-              onProductClick={() => handleProductClick(product)}
-              onSellerClick={() => handleSellerClick(product.seller)}
-            />
-          ))}
+          <h2 className="text-lg font-semibold text-gray-900">Featured Products</h2>
+          <div className="grid gap-4">
+            {products.slice(0, 6).map((product) => (
+              <div
+                key={product.id}
+                onClick={() => handleProductClick(product.id)}
+                className="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow cursor-pointer"
+              >
+                <div className="flex space-x-3">
+                  <img
+                    src={product.imageUrl || product.seller.businessImageUrl || 'https://via.placeholder.com/64x64'}
+                    alt={product.description}
+                    className="w-16 h-16 object-cover rounded-lg"
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900">{product.description}</h3>
+                    <p className="text-sm text-gray-600">{product.seller.businessName}</p>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <span className="text-sm text-gray-600">{product.seller.averageRating}</span>
+                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-600">{product.seller.distance} km</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg font-semibold text-gray-900">
+                          ${product.price}
+                        </span>
+                        {product.originalPrice && (
+                          <span className="text-sm text-gray-500 line-through">
+                            ${product.originalPrice}
+                          </span>
+                        )}
+                      </div>
+                      <button className="p-1 hover:bg-gray-100 rounded">
+                        <Heart className="w-4 h-4 text-gray-400" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Nearby Sellers */}
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Nearby Sellers</h2>
+          <div className="grid gap-4">
+            {sellers.slice(0, 3).map((seller) => (
+              <div
+                key={seller.id}
+                onClick={() => handleSellerClick(seller.id)}
+                className="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow cursor-pointer"
+              >
+                <div className="flex space-x-3">
+                  <img
+                    src={seller.businessImageUrl || 'https://via.placeholder.com/64x64'}
+                    alt={seller.businessName}
+                    className="w-16 h-16 object-cover rounded-lg"
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900">{seller.businessName}</h3>
+                    <p className="text-sm text-gray-600 capitalize">{seller.businessType}</p>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <span className="text-sm text-gray-600">{seller.averageRating}</span>
+                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-600">{seller.distance} km</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm text-gray-600">
+                        {seller.isOpen ? 'Open' : 'Closed'}
+                      </span>
+                      <button className="p-1 hover:bg-gray-100 rounded">
+                        <Heart className="w-4 h-4 text-gray-400" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-
-      <BottomNavigation currentPage="home" />
     </div>
   );
 };

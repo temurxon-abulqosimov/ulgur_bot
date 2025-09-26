@@ -1,23 +1,32 @@
 ﻿import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTelegram } from '../contexts/TelegramContext';
 import { User, Store, Shield } from 'lucide-react';
 
 const RoleSwitcher: React.FC = () => {
   const { userRole, setUserRole } = useTelegram();
+  const navigate = useNavigate();
 
   const handleRoleChange = (role: 'user' | 'seller' | 'admin') => {
+    console.log('RoleSwitcher: Button clicked for role:', role);
+    console.log('RoleSwitcher: Current userRole before change:', userRole);
     setUserRole(role);
-    localStorage.setItem('userRole', role);
-    window.location.reload(); // Reload to apply new role
+    console.log('RoleSwitcher: setUserRole called with:', role);
+    
+    // Force navigation to root to trigger RoleBasedRedirect
+    navigate('/');
   };
 
   if (process.env.NODE_ENV !== 'development') {
     return null; // Only show in development
   }
 
+  console.log('RoleSwitcher: Rendering with userRole:', userRole);
+
   return (
     <div className="fixed top-4 right-4 z-50 bg-white rounded-lg shadow-lg p-4 border">
       <h3 className="text-sm font-semibold text-gray-900 mb-3">Dev: Switch Role</h3>
+      <div className="text-xs text-gray-500 mb-2">Current: {userRole}</div>
       <div className="space-y-2">
         <button
           onClick={() => handleRoleChange('user')}
