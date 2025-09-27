@@ -19,6 +19,12 @@ import UserDashboard from './pages/UserDashboard';
 import SellerDashboard from './pages/SellerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 
+// Admin management pages
+import AdminUsers from './pages/AdminUsers';
+import AdminSellers from './pages/AdminSellers';
+import AdminAnalytics from './pages/AdminAnalytics';
+import AdminOrders from './pages/AdminOrders';
+
 // Product management pages
 import ProductCreate from './pages/ProductCreate';
 import ProductEdit from './pages/ProductEdit';
@@ -53,8 +59,11 @@ function App() {
               
               {/* Admin routes - Platform management */}
               <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/orders" element={<Orders />} />
+              <Route path="/admin/orders" element={<AdminOrders />} />
               <Route path="/admin/profile" element={<Profile />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/sellers" element={<AdminSellers />} />
+              <Route path="/admin/analytics" element={<AdminAnalytics />} />
               
               {/* Settings routes */}
               <Route path="/settings/account" element={<AccountSettings />} />

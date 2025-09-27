@@ -3,15 +3,19 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ShoppingBag, Star, MapPin, Clock, CheckCircle } from 'lucide-react';
 import { mockProducts } from '../services/mockData';
 import { useLocalization } from '../contexts/LocalizationContext';
+import { useTelegram } from '../contexts/TelegramContext';
+import { ordersApi } from '../services/api';
 import Notification, { NotificationProps } from '../components/Notification';
 
 const ProductDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { t } = useLocalization();
+  const { user } = useTelegram();
   const [product, setProduct] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [showOrderConfirm, setShowOrderConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
   
   // Notification state
   const [notification, setNotification] = useState<NotificationProps>({
@@ -39,15 +43,53 @@ const ProductDetail: React.FC = () => {
     });
   };
 
-  const handleConfirmOrder = () => {
-    const orderNum = 'UZ' + Math.random().toString(36).substr(2, 9).toUpperCase();
+  const handleConfirmOrder = async () => {
+    if (!product || !user) {
+      showNotification('error', 'Error', 'User not found. Please refresh and try again.');
+      return;
+    }
+
+    setLoading(true);
     setShowOrderConfirm(false);
-    
-    showNotification(
-      'success',
-      t('orderConfirmed'),
-      `${t('orderConfirmationMessage')} ${t('orderNumber')}: ${orderNum}`
-    );
+
+    try {
+      // Create the order
+      const orderData = {
+        productId: product.id,
+        quantity: quantity,
+        totalPrice: product.price * quantity
+      };
+
+      console.log('Creating order:', orderData);
+      
+      const response = await ordersApi.createOrder(orderData);
+      const order = response.data;
+      
+      console.log('Order created successfully:', order);
+      
+      showNotification(
+        'success',
+        t('orderConfirmed'),
+        `${t('orderConfirmationMessage')} ${t('orderNumber')}: ${order.code}`
+      );
+
+      // Navigate back to home after a delay
+      setTimeout(() => {
+        navigate('/');
+      }, 3000);
+
+    } catch (error: any) {
+      console.error('Failed to create order:', error);
+      
+      // Show error notification
+      showNotification(
+        'error',
+        'Order Failed',
+        'Failed to place order. Please try again or contact support.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!product) {
@@ -197,9 +239,10 @@ const ProductDetail: React.FC = () => {
 
           <button
             onClick={() => setShowOrderConfirm(true)}
-            className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors font-medium"
+            disabled={loading}
+            className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
           >
-            {t('confirmOrder')}
+            {loading ? 'Placing Order...' : t('confirmOrder')}
           </button>
         </div>
       </div>
@@ -226,9 +269,10 @@ const ProductDetail: React.FC = () => {
                 </button>
                 <button
                   onClick={handleConfirmOrder}
-                  className="flex-1 py-2 px-4 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                  disabled={loading}
+                  className="flex-1 py-2 px-4 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {t('confirmOrder')}
+                  {loading ? 'Placing...' : t('confirmOrder')}
                 </button>
               </div>
             </div>

@@ -15,13 +15,20 @@ import {
   ShoppingBag,
   Star,
   Clock,
-  MapPin
+  MapPin,
+  Bell,
+  CheckCircle,
+  XCircle,
+  DollarSign,
+  Calendar,
+  Tag
 } from 'lucide-react';
 import BottomNavigation from '../components/BottomNavigation';
 import { useTelegram } from '../contexts/TelegramContext';
-import { miniAppApi, dashboardApi, productsApi, sellersApi } from '../services/api';
+import { miniAppApi, dashboardApi, productsApi, sellersApi, ordersApi } from '../services/api';
 import { Product, Seller } from '../types';
 import ImageUpload from '../components/ImageUpload';
+import Notification, { NotificationProps } from '../components/Notification';
 
 const SellerDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -32,12 +39,49 @@ const SellerDashboard: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [newOrdersCount, setNewOrdersCount] = useState(0);
+
+  // Notification state
+  const [notification, setNotification] = useState<NotificationProps>({
+    type: 'success',
+    title: '',
+    message: '',
+    isVisible: false,
+    onClose: () => setNotification(prev => ({ ...prev, isVisible: false }))
+  });
 
   useEffect(() => {
     if (isReady && user) {
       loadSellerData();
     }
   }, [isReady, user]);
+
+  // Simulate new order notifications
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Simulate new orders every 30 seconds for demo
+      if (Math.random() > 0.7) {
+        setNewOrdersCount(prev => prev + 1);
+        showNotification(
+          'info',
+          'New Order Received!',
+          'You have received a new order. Check the Orders tab to view details.'
+        );
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const showNotification = (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => {
+    setNotification({
+      type,
+      title,
+      message,
+      isVisible: true,
+      onClose: () => setNotification(prev => ({ ...prev, isVisible: false }))
+    });
+  };
 
   const loadSellerData = async () => {
     try {
@@ -60,7 +104,6 @@ const SellerDashboard: React.FC = () => {
   };
 
   const handleCreateProduct = () => {
-    // Navigate to product creation
     navigate('/seller/products/create');
   };
 
@@ -73,20 +116,35 @@ const SellerDashboard: React.FC = () => {
       try {
         await productsApi.deleteProduct(productId);
         setProducts(products.filter(p => p.id !== productId));
+        showNotification('success', 'Product Deleted', 'Product has been successfully deleted.');
       } catch (err) {
         console.error('Failed to delete product:', err);
+        showNotification('error', 'Delete Failed', 'Failed to delete product. Please try again.');
       }
+    }
+  };
+
+  const handleOrderStatusChange = async (orderId: number, newStatus: string) => {
+    try {
+      await ordersApi.updateOrderStatus(orderId, newStatus);
+      setOrders(orders.map(order => 
+        order.id === orderId ? { ...order, status: newStatus } : order
+      ));
+      showNotification('success', 'Order Updated', `Order status changed to ${newStatus}.`);
+    } catch (err) {
+      console.error('Failed to update order:', err);
+      showNotification('error', 'Update Failed', 'Failed to update order status.');
     }
   };
 
   const handleImageUpload = (file: File | null) => {
     if (file) {
-      // Handle business image upload
       try {
-        // Upload logic here
         console.log('Uploading business image:', file);
+        showNotification('success', 'Image Uploaded', 'Business image has been updated.');
       } catch (err) {
         console.error('Failed to upload image:', err);
+        showNotification('error', 'Upload Failed', 'Failed to upload image. Please try again.');
       }
     }
   };
@@ -104,6 +162,16 @@ const SellerDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Notification */}
+      <Notification
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        isVisible={notification.isVisible}
+        onClose={notification.onClose}
+        duration={4000}
+      />
+
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="px-4 py-4">
@@ -113,16 +181,26 @@ const SellerDashboard: React.FC = () => {
                 <Store className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Seller Dashboard</h1>
+                <h1 className="text-xl font-bold text-gray-900">My Store</h1>
                 <p className="text-sm text-gray-600">{seller?.businessName || 'Your Business'}</p>
               </div>
             </div>
-            <button
-              onClick={() => setActiveTab('profile')}
-              className="p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
+            <div className="flex items-center space-x-2">
+              {newOrdersCount > 0 && (
+                <div className="relative">
+                  <Bell className="w-6 h-6 text-orange-500" />
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {newOrdersCount}
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={() => setActiveTab('profile')}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -132,8 +210,8 @@ const SellerDashboard: React.FC = () => {
         <div className="flex overflow-x-auto">
           {[
             { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-            { id: 'products', label: 'Products', icon: Package },
-            { id: 'orders', label: 'Orders', icon: ShoppingBag },
+            { id: 'products', label: 'My Products', icon: Package },
+            { id: 'orders', label: `Orders ${newOrdersCount > 0 ? `(${newOrdersCount})` : ''}`, icon: ShoppingBag },
             { id: 'analytics', label: 'Analytics', icon: TrendingUp },
             { id: 'profile', label: 'Profile', icon: Settings },
           ].map((tab) => {
@@ -193,7 +271,9 @@ const SellerDashboard: React.FC = () => {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-gray-600">Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900">$2,450</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0).toLocaleString()} so'm
+                    </p>
                   </div>
                 </div>
               </div>
@@ -239,15 +319,18 @@ const SellerDashboard: React.FC = () => {
                 {orders.slice(0, 3).map((order) => (
                   <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-900">Order #{order.id}</p>
+                      <p className="font-medium text-gray-900">Order #{order.code}</p>
                       <p className="text-sm text-gray-600">{order.product?.description}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">${order.totalPrice}</p>
+                      <p className="font-semibold text-gray-900">{order.totalPrice?.toLocaleString()} so'm</p>
                       <p className="text-sm text-gray-600">{order.status}</p>
                     </div>
                   </div>
                 ))}
+                {orders.length === 0 && (
+                  <p className="text-gray-500 text-center py-4">No orders yet</p>
+                )}
               </div>
             </div>
           </div>
@@ -269,22 +352,60 @@ const SellerDashboard: React.FC = () => {
             <div className="grid gap-4">
               {products.map((product) => (
                 <div key={product.id} className="bg-white p-4 rounded-lg shadow-sm border">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{product.description}</h4>
-                      <p className="text-sm text-gray-600">Price: ${product.price}</p>
-                      <p className="text-sm text-gray-600">Quantity: {product.quantity}</p>
+                  <div className="flex items-start space-x-4">
+                    {/* Product Image */}
+                    <div className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0">
+                      {product.imageUrl ? (
+                        <img
+                          src={product.imageUrl}
+                          alt={product.description}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <Package className="w-6 h-6" />
+                        </div>
+                      )}
                     </div>
-                    <div className="flex space-x-2">
+
+                    {/* Product Details */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-gray-900 truncate">{product.description}</h4>
+                      <div className="mt-2 space-y-1">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <DollarSign className="w-4 h-4 mr-1" />
+                          <span>Price: {product.price?.toLocaleString()} so'm</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Package className="w-4 h-4 mr-1" />
+                          <span>Stock: {product.quantity} units</span>
+                        </div>
+                        {product.originalPrice && product.originalPrice > product.price && (
+                          <div className="flex items-center text-sm text-green-600">
+                            <Tag className="w-4 h-4 mr-1" />
+                            <span>Sale: {product.originalPrice.toLocaleString()} so'm  {product.price.toLocaleString()} so'm</span>
+                          </div>
+                        )}
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Calendar className="w-4 h-4 mr-1" />
+                          <span>Category: {product.category}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col space-y-2">
                       <button
                         onClick={() => handleEditProduct(product.id)}
-                        className="p-2 text-gray-500 hover:text-blue-600"
+                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit Product"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteProduct(product.id)}
-                        className="p-2 text-gray-500 hover:text-red-600"
+                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete Product"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -292,29 +413,100 @@ const SellerDashboard: React.FC = () => {
                   </div>
                 </div>
               ))}
+              {products.length === 0 && (
+                <div className="text-center py-12">
+                  <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No products yet</h3>
+                  <p className="text-gray-500 mb-6">Start building your store by adding your first product</p>
+                  <button
+                    onClick={handleCreateProduct}
+                    className="inline-flex items-center px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Add Your First Product
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {activeTab === 'orders' && (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Orders</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Orders</h3>
+              {newOrdersCount > 0 && (
+                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  {newOrdersCount} new
+                </span>
+              )}
+            </div>
             <div className="space-y-3">
               {orders.map((order) => (
                 <div key={order.id} className="bg-white p-4 rounded-lg shadow-sm border">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="font-medium text-gray-900">Order #{order.id}</p>
+                      <p className="font-medium text-gray-900">Order #{order.code}</p>
                       <p className="text-sm text-gray-600">{order.product?.description}</p>
                       <p className="text-sm text-gray-600">Quantity: {order.quantity}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">${order.totalPrice}</p>
-                      <p className="text-sm text-gray-600">{order.status}</p>
+                      <p className="font-semibold text-gray-900">{order.totalPrice?.toLocaleString()} so'm</p>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                          order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </div>
                     </div>
+                  </div>
+                  
+                  {/* Order Actions */}
+                  <div className="flex space-x-2 pt-3 border-t">
+                    {order.status === 'pending' && (
+                      <>
+                        <button
+                          onClick={() => handleOrderStatusChange(order.id, 'confirmed')}
+                          className="flex items-center px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Confirm
+                        </button>
+                        <button
+                          onClick={() => handleOrderStatusChange(order.id, 'cancelled')}
+                          className="flex items-center px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600"
+                        >
+                          <XCircle className="w-4 h-4 mr-1" />
+                          Cancel
+                        </button>
+                      </>
+                    )}
+                    {order.status === 'confirmed' && (
+                      <button
+                        onClick={() => handleOrderStatusChange(order.id, 'completed')}
+                        className="flex items-center px-3 py-1 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Mark Complete
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
+              {orders.length === 0 && (
+                <div className="text-center py-8">
+                  <ShoppingBag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No orders yet</p>
+                  <p className="text-sm text-gray-400">Orders will appear here when customers place them</p>
+                </div>
+              )}
             </div>
           </div>
         )}
