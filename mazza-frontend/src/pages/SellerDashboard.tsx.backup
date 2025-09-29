@@ -1,6 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   Store, 
   Package, 
@@ -34,7 +33,6 @@ import Notification, { NotificationProps } from '../components/Notification';
 
 const SellerDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user, isReady } = useTelegram();
   const { t } = useLocalization();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'profile' | 'analytics'>('dashboard');
@@ -44,8 +42,6 @@ const SellerDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newOrdersCount, setNewOrdersCount] = useState(0);
-  
-  const [searchResults, setSearchResults] = useState<any[]>([]);
 
   // Notification state
   const [notification, setNotification] = useState<NotificationProps>({
@@ -56,30 +52,6 @@ const SellerDashboard: React.FC = () => {
     onClose: () => setNotification(prev => ({ ...prev, isVisible: false }))
   });
 
-  // Sync active tab with URL hash
-  // Sync active tab with URL hash
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
-  // Sync active tab with URL hash
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
   useEffect(() => {
     if (isReady && user) {
       loadSellerData();
@@ -87,30 +59,6 @@ const SellerDashboard: React.FC = () => {
   }, [isReady, user]);
 
   // Simulate new order notifications
-  // Sync active tab with URL hash
-  // Sync active tab with URL hash
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
-  // Sync active tab with URL hash
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
   useEffect(() => {
     const interval = setInterval(() => {
       // Simulate new orders every 30 seconds for demo
@@ -215,7 +163,7 @@ const SellerDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50">
       {/* Notification */}
       <Notification
         type={notification.type}
@@ -266,7 +214,7 @@ const SellerDashboard: React.FC = () => {
             { id: 'dashboard', label: t('dashboard'), icon: BarChart3 },
             { id: 'products', label: t('myProducts'), icon: Package },
             { id: 'orders', label: `Orders ${newOrdersCount > 0 ? `(${newOrdersCount})` : ''}`, icon: ShoppingBag },
-            
+            { id: 'analytics', label: t('analytics'), icon: TrendingUp },
             { id: 'profile', label: t('profile'), icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -626,21 +574,10 @@ const SellerDashboard: React.FC = () => {
         )}
       </div>
 
-      <BottomNavigation currentPage={activeTab} />
+      <BottomNavigation currentPage="profile" />
     </div>
   );
 };
 
 export default SellerDashboard;
-
-
-
-
-
-
-
-
-
-
-
 

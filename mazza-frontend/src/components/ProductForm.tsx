@@ -1,10 +1,10 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Package, Clock, DollarSign, Tag } from 'lucide-react';
-import { productsApi } from '../services/api';
+import { ArrowLeft, Package, Clock, DollarSign, Tag, Store } from 'lucide-react';
+import { productsApi, sellersApi } from '../services/api';
 import { CreateProductDto, ProductCategory } from '../types';
-import ImageUpload from './ImageUpload';
 import Notification, { NotificationProps } from './Notification';
+import { useTelegram } from '../contexts/TelegramContext';
 
 interface ProductFormProps {
   mode: 'create' | 'edit';
@@ -13,8 +13,10 @@ interface ProductFormProps {
 const ProductForm: React.FC<ProductFormProps> = ({ mode }) => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useTelegram();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [seller, setSeller] = useState<any>(null);
   
   // Notification state
   const [notification, setNotification] = useState<NotificationProps>({
@@ -35,13 +37,21 @@ const ProductForm: React.FC<ProductFormProps> = ({ mode }) => {
     category: ProductCategory.OTHER,
   });
 
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-
   useEffect(() => {
     if (mode === 'edit' && id) {
       loadProduct();
     }
+    loadSellerData();
   }, [mode, id]);
+
+  const loadSellerData = async () => {
+    try {
+      const response = await sellersApi.getSellerProfile();
+      setSeller(response.data);
+    } catch (err) {
+      console.error('Failed to load seller data:', err);
+    }
+  };
 
   const loadProduct = async () => {
     try {
@@ -98,7 +108,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ mode }) => {
         showNotification(
           'success',
           'Product Created Successfully!',
-          'Your product has been added to your store. You can view it in your products list.'
+          'Your product has been added to your store. It will use your business image.'
         );
         
         // Navigate after a short delay to let user see the notification
@@ -136,10 +146,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ mode }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageSelect = (file: File | null) => {
-    setSelectedImage(file);
-  };
-
   const categoryOptions = [
     { value: ProductCategory.BREAD, label: 'Bread & Bakery' },
     { value: ProductCategory.PASTRY, label: 'Pastry' },
@@ -150,7 +156,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ mode }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* Notification */}
       <Notification
         type={notification.type}
@@ -187,16 +193,35 @@ const ProductForm: React.FC<ProductFormProps> = ({ mode }) => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Product Image */}
+          {/* Business Image Preview */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Product Image
             </label>
-            <div className="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg">
-              <ImageUpload
-                onImageSelect={handleImageSelect}
-                label="Upload product image"
-              />
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                  {seller?.businessImageUrl ? (
+                    <img
+                      src={seller.businessImageUrl}
+                      alt={seller.businessName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Store className="w-8 h-8 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-600">
+                    This product will use your business image
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {seller?.businessName || 'Your business'}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 

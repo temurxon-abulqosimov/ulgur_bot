@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Users, Store, Package, TrendingUp, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import BottomNavigation from '../components/BottomNavigation';
 import { useTelegram } from '../contexts/TelegramContext';
+import { useLocalization } from '../contexts/LocalizationContext';
 import { adminApi } from '../services/api';
 
 interface AdminStats {
@@ -16,6 +17,7 @@ interface AdminStats {
 
 const AdminDashboard: React.FC = () => {
   const { user, isReady } = useTelegram();
+  const { t } = useLocalization();
   const navigate = useNavigate();
   const [adminStats, setAdminStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,10 +79,10 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="px-4 py-4">
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-md mx-auto px-4 py-4">
           <div className="flex items-center">
             <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center mr-3">
               <Shield className="w-5 h-5 text-white" />
@@ -209,9 +211,10 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      <BottomNavigation currentPage="profile" />
+      <BottomNavigation currentPage="home" />
     </div>
   );
 };
 
 export default AdminDashboard;
+

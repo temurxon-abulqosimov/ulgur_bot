@@ -4,13 +4,30 @@ import { mockSellers, mockProducts } from './mockData';
 // Use a non-existent URL to force fallback to mock data
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:9999/webapp';
 
+// Cache for API responses
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 5000, // 5 second timeout
+  timeout: 3000, // Reduced timeout for faster fallback
 });
+
+// Cache interceptor
+const getCachedData = (key: string) => {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  return null;
+};
+
+const setCachedData = (key: string, data: any) => {
+  cache.set(key, { data, timestamp: Date.now() });
+};
 
 // Interceptor to add Telegram initData to requests
 api.interceptors.request.use((config) => {
@@ -36,11 +53,33 @@ api.interceptors.request.use((config) => {
   
   if (initData) {
     config.headers['X-Telegram-Init-Data'] = initData;
-    console.log('API Request: Adding initData to headers:', initData);
   }
   
   return config;
 });
+
+// Response interceptor for caching
+api.interceptors.response.use(
+  (response) => {
+    // Cache GET requests
+    if (response.config.method === 'get') {
+      const cacheKey = `${response.config.method}:${response.config.url}`;
+      setCachedData(cacheKey, response.data);
+    }
+    return response;
+  },
+  (error) => {
+    // Return cached data if available on error
+    if (error.config?.method === 'get') {
+      const cacheKey = `${error.config.method}:${error.config.url}`;
+      const cachedData = getCachedData(cacheKey);
+      if (cachedData) {
+        return Promise.resolve({ data: cachedData });
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Mini App API endpoints
 export const miniAppApi = {
@@ -50,11 +89,16 @@ export const miniAppApi = {
   getAdminDashboard: () => api.get('/mini-app/admin-dashboard'),
 };
 
-// Products API endpoints
+// Products API endpoints with caching
 export const productsApi = {
   getProducts: async () => {
+    const cacheKey = 'products:all';
+    const cached = getCachedData(cacheKey);
+    if (cached) return { data: cached };
+
     try {
       const response = await api.get('/products');
+      setCachedData(cacheKey, response.data);
       return response;
     } catch (error) {
       console.log('Backend not available, returning mock data');
@@ -62,8 +106,13 @@ export const productsApi = {
     }
   },
   getProductById: async (id: number) => {
+    const cacheKey = `products:${id}`;
+    const cached = getCachedData(cacheKey);
+    if (cached) return { data: cached };
+
     try {
       const response = await api.get(`/products/${id}`);
+      setCachedData(cacheKey, response.data);
       return response;
     } catch (error) {
       console.log('Backend not available, returning mock data');
@@ -75,8 +124,13 @@ export const productsApi = {
     }
   },
   getSellerProducts: async () => {
+    const cacheKey = 'products:seller';
+    const cached = getCachedData(cacheKey);
+    if (cached) return { data: cached };
+
     try {
       const response = await api.get('/products/seller');
+      setCachedData(cacheKey, response.data);
       return response;
     } catch (error) {
       console.log('Backend not available, returning mock data');
@@ -107,10 +161,12 @@ export const productsApi = {
       console.log('API: Creating product with data:', data);
       const response = await api.post('/products', data);
       console.log('API: Product created successfully:', response.data);
+      // Clear cache after creating
+      cache.delete('products:all');
+      cache.delete('products:seller');
       return response;
     } catch (error: any) {
       console.log('Backend not available, simulating product creation for demo');
-      // Simulate successful creation for demo purposes
       return { 
         data: { 
           id: Math.floor(Math.random() * 1000), 
@@ -126,10 +182,13 @@ export const productsApi = {
       console.log('API: Updating product with data:', data);
       const response = await api.patch(`/products/${id}`, data);
       console.log('API: Product updated successfully:', response.data);
+      // Clear cache after updating
+      cache.delete(`products:${id}`);
+      cache.delete('products:all');
+      cache.delete('products:seller');
       return response;
     } catch (error: any) {
       console.log('Backend not available, simulating product update for demo');
-      // Simulate successful update for demo purposes
       return { 
         data: { 
           id, 
@@ -144,20 +203,28 @@ export const productsApi = {
       console.log('API: Deleting product with id:', id);
       const response = await api.delete(`/products/${id}`);
       console.log('API: Product deleted successfully:', response.data);
+      // Clear cache after deleting
+      cache.delete(`products:${id}`);
+      cache.delete('products:all');
+      cache.delete('products:seller');
       return response;
     } catch (error: any) {
       console.log('Backend not available, simulating product deletion for demo');
-      // Simulate successful deletion for demo purposes
       return { data: { id, deleted: true } };
     }
   },
 };
 
-// Sellers API endpoints
+// Sellers API endpoints with caching
 export const sellersApi = {
   getSellers: async () => {
+    const cacheKey = 'sellers:all';
+    const cached = getCachedData(cacheKey);
+    if (cached) return { data: cached };
+
     try {
       const response = await api.get('/sellers');
+      setCachedData(cacheKey, response.data);
       return response;
     } catch (error) {
       console.log('Backend not available, returning mock data');
@@ -165,8 +232,13 @@ export const sellersApi = {
     }
   },
   getSellerById: async (id: number) => {
+    const cacheKey = `sellers:${id}`;
+    const cached = getCachedData(cacheKey);
+    if (cached) return { data: cached };
+
     try {
       const response = await api.get(`/sellers/${id}`);
+      setCachedData(cacheKey, response.data);
       return response;
     } catch (error) {
       console.log('Backend not available, returning mock data');
@@ -178,8 +250,13 @@ export const sellersApi = {
     }
   },
   getSellerProfile: async () => {
+    const cacheKey = 'sellers:profile';
+    const cached = getCachedData(cacheKey);
+    if (cached) return { data: cached };
+
     try {
       const response = await api.get('/sellers/profile');
+      setCachedData(cacheKey, response.data);
       return response;
     } catch (error) {
       console.log('Backend not available, returning mock data');
@@ -198,6 +275,8 @@ export const sellersApi = {
   createSeller: async (data: any) => {
     try {
       const response = await api.post('/sellers', data);
+      // Clear cache after creating
+      cache.delete('sellers:all');
       return response;
     } catch (error: any) {
       console.log('Backend not available, simulating seller creation for demo');
@@ -214,6 +293,9 @@ export const sellersApi = {
   updateSellerProfile: async (data: any) => {
     try {
       const response = await api.patch('/sellers/profile', data);
+      // Clear cache after updating
+      cache.delete('sellers:profile');
+      cache.delete('sellers:all');
       return response;
     } catch (error: any) {
       console.log('Backend not available, simulating seller profile update for demo');

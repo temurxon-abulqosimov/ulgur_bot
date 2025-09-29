@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo, useCallback } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ShoppingBag, 
@@ -12,14 +12,12 @@ import {
   ShoppingCart
 } from 'lucide-react';
 import { useTelegram } from '../contexts/TelegramContext';
-import { useLocalization } from '../contexts/LocalizationContext';
 import { productsApi, sellersApi } from '../services/api';
 import { Product, Seller } from '../types';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { user, isReady } = useTelegram();
-  const { t } = useLocalization();
   const [products, setProducts] = useState<Product[]>([]);
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,8 +25,13 @@ const Home: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Memoize distance calculation to avoid recalculation
-  const calculateDistance = useCallback((userLocation: { lat: number; lng: number }, sellerLocation: { latitude: number; longitude: number }) => {
+  useEffect(() => {
+    if (isReady && user) {
+      loadHomeData();
+    }
+  }, [isReady, user]);
+
+  const calculateDistance = (userLocation: { lat: number; lng: number }, sellerLocation: { latitude: number; longitude: number }) => {
     const R = 6371; // Earth's radius in kilometers
     const dLat = (sellerLocation.latitude - userLocation.lat) * Math.PI / 180;
     const dLng = (sellerLocation.longitude - userLocation.lng) * Math.PI / 180;
@@ -37,25 +40,16 @@ const Home: React.FC = () => {
       Math.sin(dLng/2) * Math.sin(dLng/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
-  }, []);
+  };
 
-  // Memoize categories to avoid recreation on every render
-  const categories = useMemo(() => [
-    { value: 'all', label: t('allCategories') },
-    { value: 'bakery', label: 'Bakery' },
-    { value: 'restaurant', label: 'Restaurant' },
-    { value: 'cafe', label: 'Cafe' },
-    { value: 'grocery', label: 'Grocery' },
-  ], [t]);
-
-  const loadHomeData = useCallback(async () => {
+  const loadHomeData = async () => {
     try {
       setLoading(true);
       
       // Get user location (mock for now)
       const userLocation = { lat: 41.3111, lng: 69.2797 };
       
-      // Load data in parallel for better performance
+      // Get sellers and products
       const [sellersResponse, productsResponse] = await Promise.all([
         sellersApi.getSellers(),
         productsApi.getProducts()
@@ -87,15 +81,9 @@ const Home: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [calculateDistance]);
+  };
 
-  useEffect(() => {
-    if (isReady && user) {
-      loadHomeData();
-    }
-  }, [isReady, user, loadHomeData]);
-
-  const handleSearch = useCallback(async () => {
+  const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     
     try {
@@ -108,26 +96,30 @@ const Home: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory]);
+  };
 
-  const handleProductClick = useCallback((productId: number) => {
+  const handleProductClick = (productId: number) => {
     navigate(`/product/${productId}`);
-  }, [navigate]);
+  };
 
-  const handleSellerClick = useCallback((sellerId: number) => {
+  const handleSellerClick = (sellerId: number) => {
     navigate(`/seller-detail/${sellerId}`);
-  }, [navigate]);
+  };
 
-  // Memoize filtered products to avoid recalculation
-  const displayedProducts = useMemo(() => products.slice(0, 6), [products]);
-  const displayedSellers = useMemo(() => sellers.slice(0, 3), [sellers]);
+  const categories = [
+    { value: 'all', label: 'All Categories' },
+    { value: 'bakery', label: 'Bakery' },
+    { value: 'restaurant', label: 'Restaurant' },
+    { value: 'cafe', label: 'Cafe' },
+    { value: 'grocery', label: 'Grocery' },
+  ];
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('loading')}</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -142,7 +134,7 @@ const Home: React.FC = () => {
             onClick={loadHomeData}
             className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
           >
-            {t('retry')}
+            Retry
           </button>
         </div>
       </div>
@@ -150,12 +142,12 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-md mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-semibold text-gray-900">{t('discover')}</h1>
+            <h1 className="text-lg font-semibold text-gray-900">Discover</h1>
             <button
               onClick={() => navigate('/search')}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -172,7 +164,7 @@ const Home: React.FC = () => {
           <div className="flex space-x-2">
             <input
               type="text"
-              placeholder={t("searchProducts")}
+              placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -208,9 +200,9 @@ const Home: React.FC = () => {
       <div className="max-w-md mx-auto p-4">
         {/* Featured Products */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">{t('featuredProducts')}</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Featured Products</h2>
           <div className="grid gap-4">
-            {displayedProducts.map((product) => (
+            {products.slice(0, 6).map((product) => (
               <div
                 key={product.id}
                 onClick={() => handleProductClick(product.id)}
@@ -221,7 +213,6 @@ const Home: React.FC = () => {
                     src={product.imageUrl || product.seller.businessImageUrl || 'https://via.placeholder.com/64x64'}
                     alt={product.description}
                     className="w-16 h-16 object-cover rounded-lg"
-                    loading="lazy"
                   />
                   <div className="flex-1">
                     <h3 className="font-medium text-gray-900">{product.description}</h3>
@@ -258,7 +249,7 @@ const Home: React.FC = () => {
         <div className="mt-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Nearby Sellers</h2>
           <div className="grid gap-4">
-            {displayedSellers.map((seller) => (
+            {sellers.slice(0, 3).map((seller) => (
               <div
                 key={seller.id}
                 onClick={() => handleSellerClick(seller.id)}
@@ -269,7 +260,6 @@ const Home: React.FC = () => {
                     src={seller.businessImageUrl || 'https://via.placeholder.com/64x64'}
                     alt={seller.businessName}
                     className="w-16 h-16 object-cover rounded-lg"
-                    loading="lazy"
                   />
                   <div className="flex-1">
                     <h3 className="font-medium text-gray-900">{seller.businessName}</h3>
@@ -300,4 +290,3 @@ const Home: React.FC = () => {
 };
 
 export default Home;
-

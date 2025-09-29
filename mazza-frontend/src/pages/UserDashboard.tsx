@@ -13,12 +13,14 @@ import {
 } from 'lucide-react';
 import BottomNavigation from '../components/BottomNavigation';
 import { useTelegram } from '../contexts/TelegramContext';
+import { useLocalization } from '../contexts/LocalizationContext';
 import { productsApi, sellersApi, ordersApi } from '../services/api';
 import { Product, Seller } from '../types';
 
 const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, isReady } = useTelegram();
+  const { t } = useLocalization();
   const [activeTab, setActiveTab] = useState<'home' | 'search' | 'orders' | 'profile'>('home');
   const [products, setProducts] = useState<Product[]>([]);
   const [sellers, setSellers] = useState<Seller[]>([]);
@@ -76,7 +78,7 @@ const UserDashboard: React.FC = () => {
   };
 
   const categories = [
-    { value: 'all', label: 'All Categories' },
+    { value: 'all', label: t('allCategories') },
     { value: 'bakery', label: 'Bakery' },
     { value: 'restaurant', label: 'Restaurant' },
     { value: 'cafe', label: 'Cafe' },
@@ -111,12 +113,12 @@ const UserDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-md mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-semibold text-gray-900">Discover</h1>
+            <h1 className="text-lg font-semibold text-gray-900">{t('discover')}</h1>
             <button
               onClick={() => setActiveTab('search')}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -133,7 +135,7 @@ const UserDashboard: React.FC = () => {
           <div className="flex space-x-2">
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={t("searchProducts")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -171,7 +173,7 @@ const UserDashboard: React.FC = () => {
           <div className="space-y-4">
             {/* Featured Products */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Featured Products</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('featuredProducts')}</h2>
               <div className="grid gap-4">
                 {products.slice(0, 6).map((product) => (
                   <div
@@ -324,3 +326,4 @@ const UserDashboard: React.FC = () => {
 };
 
 export default UserDashboard;
+

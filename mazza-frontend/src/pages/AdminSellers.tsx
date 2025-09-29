@@ -70,10 +70,10 @@ const AdminSellers: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="px-4 py-4">
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-md mx-auto px-4 py-4">
           <div className="flex items-center">
             <button
               onClick={() => navigate('/admin')}

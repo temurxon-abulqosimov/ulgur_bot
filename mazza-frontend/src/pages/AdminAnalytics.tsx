@@ -288,7 +288,7 @@ const AdminAnalytics: React.FC = () => {
         </div>
       </div>
 
-      <BottomNavigation currentPage="profile" />
+      <BottomNavigation currentPage="analytics" />
     </div>
   );
 };

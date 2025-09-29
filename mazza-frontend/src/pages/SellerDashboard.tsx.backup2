@@ -1,6 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   Store, 
   Package, 
@@ -34,10 +33,9 @@ import Notification, { NotificationProps } from '../components/Notification';
 
 const SellerDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user, isReady } = useTelegram();
   const { t } = useLocalization();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'profile' | 'analytics'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'profile'>('dashboard');
   const [seller, setSeller] = useState<Seller | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -56,30 +54,6 @@ const SellerDashboard: React.FC = () => {
     onClose: () => setNotification(prev => ({ ...prev, isVisible: false }))
   });
 
-  // Sync active tab with URL hash
-  // Sync active tab with URL hash
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
-  // Sync active tab with URL hash
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
   useEffect(() => {
     if (isReady && user) {
       loadSellerData();
@@ -87,30 +61,6 @@ const SellerDashboard: React.FC = () => {
   }, [isReady, user]);
 
   // Simulate new order notifications
-  // Sync active tab with URL hash
-  // Sync active tab with URL hash
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
-  // Sync active tab with URL hash
-  useEffect(() => {
-    const hash = location.hash.substring(1);
-    if (hash && ['dashboard', 'products', 'orders', 'profile', 'analytics'].includes(hash)) {
-      setActiveTab(hash as any);
-    }
-  }, [location.hash]);
-
   useEffect(() => {
     const interval = setInterval(() => {
       // Simulate new orders every 30 seconds for demo
@@ -215,7 +165,7 @@ const SellerDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50">
       {/* Notification */}
       <Notification
         type={notification.type}
@@ -626,20 +576,12 @@ const SellerDashboard: React.FC = () => {
         )}
       </div>
 
-      <BottomNavigation currentPage={activeTab} />
+      <BottomNavigation currentPage="profile" />
     </div>
   );
 };
 
 export default SellerDashboard;
-
-
-
-
-
-
-
-
 
 
 
