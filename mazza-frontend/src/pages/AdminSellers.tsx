@@ -1,42 +1,26 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Store, Users, Package, TrendingUp, CheckCircle, XCircle, AlertCircle, Search, Filter } from 'lucide-react';
-import BottomNavigation from '../components/BottomNavigation';
-import { useTelegram } from '../contexts/TelegramContext';
+import { ArrowLeft, Search, Filter, Store, CheckCircle, XCircle } from 'lucide-react';
 import { adminApi } from '../services/api';
-
-interface Seller {
-  id: number;
-  businessName: string;
-  businessType: string;
-  phoneNumber: string;
-  email: string;
-  status: string;
-  createdAt: string;
-  averageRating: number;
-  totalProducts: number;
-}
+import BottomNavigation from '../components/BottomNavigation';
 
 const AdminSellers: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isReady } = useTelegram();
-  const [sellers, setSellers] = useState<Seller[]>([]);
+  const [sellers, setSellers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (isReady && user) {
-      loadSellers();
-    }
-  }, [isReady, user]);
+    loadSellers();
+  }, []);
 
   const loadSellers = async () => {
     try {
       setLoading(true);
       const response = await adminApi.getSellers();
       setSellers(response.data || []);
-    } catch (err) {
-      console.error('Failed to load sellers:', err);
+    } catch (error) {
+      console.error('Failed to load sellers:', error);
     } finally {
       setLoading(false);
     }
@@ -44,12 +28,12 @@ const AdminSellers: React.FC = () => {
 
   const handleSellerStatusChange = async (sellerId: number, newStatus: string) => {
     try {
-      await adminApi.updateSellerStatus(sellerId, newStatus);
+      await adminApi.updateSellerStatus(String(sellerId), newStatus);
       setSellers(sellers.map(seller => 
         seller.id === sellerId ? { ...seller, status: newStatus } : seller
       ));
-    } catch (err) {
-      console.error('Failed to update seller status:', err);
+    } catch (error) {
+      console.error('Failed to update seller status:', error);
     }
   };
 
@@ -199,4 +183,4 @@ const AdminSellers: React.FC = () => {
   );
 };
 
-export default AdminSellers;
+export default AdminSellers; 

@@ -1,28 +1,28 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Store, 
-  Package, 
-  TrendingUp, 
-  Users, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Eye, 
+import {
+  Store,
+  Package,
+  ShoppingCart,
+  TrendingUp,
+  Users,
+  Eye,
   Upload,
-  Settings,
-  BarChart3,
-  ShoppingBag,
-  Star,
+  Plus,
+  Edit,
+  Trash2,
   Clock,
   MapPin,
+  BarChart3,
   Bell,
-  CheckCircle,
-  XCircle,
+  Settings,
+  ShoppingBag,
+  Star,
   DollarSign,
+  Tag,
   Calendar,
-  Tag
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 import BottomNavigation from '../components/BottomNavigation';
 import { useTelegram } from '../contexts/TelegramContext';
@@ -168,7 +168,7 @@ const SellerDashboard: React.FC = () => {
   const handleDeleteProduct = async (productId: number) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await productsApi.deleteProduct(productId);
+        await productsApi.deleteProduct(String(productId));
         setProducts(products.filter(p => p.id !== productId));
         showNotification('success', 'Product Deleted', 'Product has been successfully deleted.');
       } catch (err) {
@@ -180,7 +180,7 @@ const SellerDashboard: React.FC = () => {
 
   const handleOrderStatusChange = async (orderId: number, newStatus: string) => {
     try {
-      await ordersApi.updateOrderStatus(orderId, newStatus);
+      await ordersApi.updateOrderStatus(String(orderId), newStatus);
       setOrders(orders.map(order => 
         order.id === orderId ? { ...order, status: newStatus } : order
       ));

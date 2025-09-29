@@ -1,8 +1,8 @@
 ﻿import axios from 'axios';
 import { mockSellers, mockProducts } from './mockData';
 
-// Use a non-existent URL to force fallback to mock data
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:9999/webapp';
+// Use Railway backend URL
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://ulgur-backend-production-53b2.up.railway.app/webapp';
 
 // Cache for API responses
 const cache = new Map<string, { data: any; timestamp: number }>();
@@ -13,7 +13,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 3000, // Reduced timeout for faster fallback
+  timeout: 10000, // Increased timeout for production
 });
 
 // Cache interceptor
@@ -29,39 +29,9 @@ const setCachedData = (key: string, data: any) => {
   cache.set(key, { data, timestamp: Date.now() });
 };
 
-// Interceptor to add Telegram initData to requests
-api.interceptors.request.use((config) => {
-  // Try to get initData from Telegram WebApp first
-  let initData = (window as any).Telegram?.WebApp?.initData;
-  
-  // If not available, try to get from localStorage (for development)
-  if (!initData) {
-    initData = localStorage.getItem('telegramInitData');
-  }
-  
-  // If still not available, create a mock one for development
-  if (!initData) {
-    const mockUser = {
-      id: 123456789,
-      first_name: 'Test',
-      last_name: 'User',
-      username: 'testuser',
-      language_code: 'uz'
-    };
-    initData = `user=${encodeURIComponent(JSON.stringify(mockUser))}&auth_date=${Math.floor(Date.now() / 1000)}&hash=mock_hash_for_development`;
-  }
-  
-  if (initData) {
-    config.headers['X-Telegram-Init-Data'] = initData;
-  }
-  
-  return config;
-});
-
 // Response interceptor for caching
 api.interceptors.response.use(
   (response) => {
-    // Cache GET requests
     if (response.config.method === 'get') {
       const cacheKey = `${response.config.method}:${response.config.url}`;
       setCachedData(cacheKey, response.data);
@@ -69,7 +39,6 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Return cached data if available on error
     if (error.config?.method === 'get') {
       const cacheKey = `${error.config.method}:${error.config.url}`;
       const cachedData = getCachedData(cacheKey);
@@ -81,443 +50,460 @@ api.interceptors.response.use(
   }
 );
 
-// Mini App API endpoints
-export const miniAppApi = {
-  getEntry: () => api.get('/mini-app/entry'),
-  getUserDashboard: () => api.get('/mini-app/user-dashboard'),
-  getSellerDashboard: () => api.get('/mini-app/seller-dashboard'),
-  getAdminDashboard: () => api.get('/mini-app/admin-dashboard'),
+// API endpoints
+export const authApi = {
+  login: async (data: any) => {
+    const cacheKey = `post:${api.defaults.baseURL}/auth/login`;
+    cache.delete(cacheKey); // Invalidate cache on login
+    return api.post('/auth/login', data);
+  },
+  register: async (data: any) => {
+    const cacheKey = `post:${api.defaults.baseURL}/auth/register`;
+    cache.delete(cacheKey); // Invalidate cache on register
+    return api.post('/auth/register', data);
+  },
+  logout: async () => {
+    return api.post('/auth/logout');
+  },
+  getProfile: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/auth/profile`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/auth/profile');
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: { role: 'user', id: 1, name: 'Mock User' } });
+    }
+  }
 };
 
-// Products API endpoints with caching
-export const productsApi = {
-  getProducts: async () => {
-    const cacheKey = 'products:all';
-    const cached = getCachedData(cacheKey);
-    if (cached) return { data: cached };
-
-    try {
-      const response = await api.get('/products');
-      setCachedData(cacheKey, response.data);
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: mockProducts };
-    }
-  },
-  getProductById: async (id: number) => {
-    const cacheKey = `products:${id}`;
-    const cached = getCachedData(cacheKey);
-    if (cached) return { data: cached };
-
-    try {
-      const response = await api.get(`/products/${id}`);
-      setCachedData(cacheKey, response.data);
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      const product = mockProducts.find(p => p.id === id);
-      if (product) {
-        return { data: product };
-      }
-      throw new Error('Product not found');
-    }
-  },
-  getSellerProducts: async () => {
-    const cacheKey = 'products:seller';
-    const cached = getCachedData(cacheKey);
-    if (cached) return { data: cached };
-
-    try {
-      const response = await api.get('/products/seller');
-      setCachedData(cacheKey, response.data);
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: mockProducts.filter(p => p.seller.id === 1) };
-    }
-  },
-  searchProducts: async (query: string, category?: string) => {
-    try {
-      const response = await api.get(`/products/search?q=${query}${category ? `&category=${category}` : ''}`);
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      let filteredProducts = mockProducts;
-      if (query) {
-        filteredProducts = mockProducts.filter(p => 
-          p.description.toLowerCase().includes(query.toLowerCase()) ||
-          p.seller.businessName.toLowerCase().includes(query.toLowerCase())
-        );
-      }
-      if (category && category !== 'all') {
-        filteredProducts = filteredProducts.filter(p => p.seller.businessType === category);
-      }
-      return { data: filteredProducts };
-    }
-  },
-  createProduct: async (data: any) => {
-    try {
-      console.log('API: Creating product with data:', data);
-      const response = await api.post('/products', data);
-      console.log('API: Product created successfully:', response.data);
-      // Clear cache after creating
-      cache.delete('products:all');
-      cache.delete('products:seller');
-      return response;
-    } catch (error: any) {
-      console.log('Backend not available, simulating product creation for demo');
-      return { 
-        data: { 
-          id: Math.floor(Math.random() * 1000), 
-          ...data, 
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        } 
-      };
-    }
-  },
-  updateProduct: async (id: number, data: any) => {
-    try {
-      console.log('API: Updating product with data:', data);
-      const response = await api.patch(`/products/${id}`, data);
-      console.log('API: Product updated successfully:', response.data);
-      // Clear cache after updating
-      cache.delete(`products:${id}`);
-      cache.delete('products:all');
-      cache.delete('products:seller');
-      return response;
-    } catch (error: any) {
-      console.log('Backend not available, simulating product update for demo');
-      return { 
-        data: { 
-          id, 
-          ...data, 
-          updatedAt: new Date().toISOString()
-        } 
-      };
-    }
-  },
-  deleteProduct: async (id: number) => {
-    try {
-      console.log('API: Deleting product with id:', id);
-      const response = await api.delete(`/products/${id}`);
-      console.log('API: Product deleted successfully:', response.data);
-      // Clear cache after deleting
-      cache.delete(`products:${id}`);
-      cache.delete('products:all');
-      cache.delete('products:seller');
-      return response;
-    } catch (error: any) {
-      console.log('Backend not available, simulating product deletion for demo');
-      return { data: { id, deleted: true } };
-    }
-  },
-};
-
-// Sellers API endpoints with caching
-export const sellersApi = {
-  getSellers: async () => {
-    const cacheKey = 'sellers:all';
-    const cached = getCachedData(cacheKey);
-    if (cached) return { data: cached };
-
-    try {
-      const response = await api.get('/sellers');
-      setCachedData(cacheKey, response.data);
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: mockSellers };
-    }
-  },
-  getSellerById: async (id: number) => {
-    const cacheKey = `sellers:${id}`;
-    const cached = getCachedData(cacheKey);
-    if (cached) return { data: cached };
-
-    try {
-      const response = await api.get(`/sellers/${id}`);
-      setCachedData(cacheKey, response.data);
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      const seller = mockSellers.find(s => s.id === id);
-      if (seller) {
-        return { data: seller };
-      }
-      throw new Error('Seller not found');
-    }
-  },
-  getSellerProfile: async () => {
-    const cacheKey = 'sellers:profile';
-    const cached = getCachedData(cacheKey);
-    if (cached) return { data: cached };
-
-    try {
-      const response = await api.get('/sellers/profile');
-      setCachedData(cacheKey, response.data);
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: mockSellers[0] };
-    }
-  },
-  getNearbySellers: async (lat: number, lng: number) => {
-    try {
-      const response = await api.get(`/sellers/nearby?lat=${lat}&lng=${lng}`);
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: mockSellers };
-    }
-  },
-  createSeller: async (data: any) => {
-    try {
-      const response = await api.post('/sellers', data);
-      // Clear cache after creating
-      cache.delete('sellers:all');
-      return response;
-    } catch (error: any) {
-      console.log('Backend not available, simulating seller creation for demo');
-      return { 
-        data: { 
-          id: Math.floor(Math.random() * 1000), 
-          ...data, 
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        } 
-      };
-    }
-  },
-  updateSellerProfile: async (data: any) => {
-    try {
-      const response = await api.patch('/sellers/profile', data);
-      // Clear cache after updating
-      cache.delete('sellers:profile');
-      cache.delete('sellers:all');
-      return response;
-    } catch (error: any) {
-      console.log('Backend not available, simulating seller profile update for demo');
-      return { 
-        data: { 
-          ...data, 
-          updatedAt: new Date().toISOString()
-        } 
-      };
-    }
-  },
-};
-
-// Users API endpoints
 export const usersApi = {
   getUsers: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/users`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
     try {
       const response = await api.get('/users');
       return response;
     } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: [] };
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: [] });
     }
   },
-  getUserById: async (id: number) => {
+  getUserById: async (id: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/users/${id}`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
     try {
       const response = await api.get(`/users/${id}`);
       return response;
     } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: null };
-    }
-  },
-  getUserProfile: async () => {
-    try {
-      const response = await api.get('/users/profile');
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: null };
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: null });
     }
   },
   createUser: async (data: any) => {
-    try {
-      const response = await api.post('/users', data);
-      return response;
-    } catch (error: any) {
-      console.log('Backend not available, simulating user creation for demo');
-      return { 
-        data: { 
-          id: Math.floor(Math.random() * 1000), 
-          ...data, 
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        } 
-      };
-    }
+    const cacheKey = `get:${api.defaults.baseURL}/users`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.post('/users', data);
   },
-  updateUserProfile: async (data: any) => {
-    try {
-      const response = await api.patch('/users/profile', data);
-      return response;
-    } catch (error: any) {
-      console.log('Backend not available, simulating user profile update for demo');
-      return { 
-        data: { 
-          ...data, 
-          updatedAt: new Date().toISOString()
-        } 
-      };
-    }
+  updateUser: async (id: string, data: any) => {
+    const cacheKey = `get:${api.defaults.baseURL}/users`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.put(`/users/${id}`, data);
   },
+  deleteUser: async (id: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/users`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.delete(`/users/${id}`);
+  }
 };
 
-// Orders API endpoints
+export const sellersApi = {
+  getSellers: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/sellers`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/sellers');
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: mockSellers });
+    }
+  },
+  getSellerById: async (id: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/sellers/${id}`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get(`/sellers/${id}`);
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      const mockSeller = mockSellers.find(s => s.id.toString() === id);
+      return Promise.resolve({ data: mockSeller || null });
+    }
+  },
+  getSellerProfile: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/sellers/profile`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/sellers/profile');
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: mockSellers[0] });
+    }
+  },
+  createSeller: async (data: any) => {
+    const cacheKey = `get:${api.defaults.baseURL}/sellers`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.post('/sellers', data);
+  },
+  updateSeller: async (id: string, data: any) => {
+    const cacheKey = `get:${api.defaults.baseURL}/sellers`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.put(`/sellers/${id}`, data);
+  },
+  updateSellerProfile: async (data: any) => {
+    const cacheKey = `get:${api.defaults.baseURL}/sellers/profile`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.put('/sellers/profile', data);
+  },
+  deleteSeller: async (id: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/sellers`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.delete(`/sellers/${id}`);
+  }
+};
+
+export const productsApi = {
+  getProducts: async (params?: any) => {
+    const cacheKey = `get:${api.defaults.baseURL}/products${params ? `?${new URLSearchParams(params).toString()}` : ''}`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/products', { params });
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: mockProducts });
+    }
+  },
+  getProductById: async (id: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/products/${id}`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get(`/products/${id}`);
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      const mockProduct = mockProducts.find(p => p.id.toString() === id);
+      return Promise.resolve({ data: mockProduct || null });
+    }
+  },
+  getSellerProducts: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/products/seller`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/products/seller');
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: mockProducts });
+    }
+  },
+  searchProducts: async (query: string, category?: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/products/search?q=${query}&category=${category || ''}`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/products/search', { 
+        params: { q: query, category } 
+      });
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      const filteredProducts = mockProducts.filter(p => 
+        p.description.toLowerCase().includes(query.toLowerCase())
+      );
+      return Promise.resolve({ data: filteredProducts });
+    }
+  },
+  createProduct: async (data: any) => {
+    const cacheKey = `get:${api.defaults.baseURL}/products`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.post('/products', data);
+  },
+  updateProduct: async (id: string, data: any) => {
+    const cacheKey = `get:${api.defaults.baseURL}/products`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.put(`/products/${id}`, data);
+  },
+  deleteProduct: async (id: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/products`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.delete(`/products/${id}`);
+  }
+};
+
 export const ordersApi = {
   getOrders: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/orders`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
     try {
       const response = await api.get('/orders');
       return response;
     } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: [] };
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: [] });
     }
   },
-  getOrderById: async (id: number) => {
+  getOrderById: async (id: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/orders/${id}`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
     try {
       const response = await api.get(`/orders/${id}`);
       return response;
     } catch (error) {
-      throw new Error('Order not found');
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: null });
     }
   },
   getUserOrders: async (userId: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/orders/user/${userId}`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
     try {
       const response = await api.get(`/orders/user/${userId}`);
       return response;
     } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: [] };
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: [] });
     }
   },
   createOrder: async (data: any) => {
-    try {
-      const response = await api.post('/orders', data);
-      return response;
-    } catch (error: any) {
-      console.log('Backend not available, simulating order creation for demo');
-      return { 
-        data: { 
-          id: Math.floor(Math.random() * 1000), 
-          ...data, 
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        } 
-      };
-    }
+    const cacheKey = `get:${api.defaults.baseURL}/orders`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.post('/orders', data);
   },
-  updateOrderStatus: async (id: number, status: string) => {
-    try {
-      const response = await api.patch(`/orders/${id}/status`, { status });
-      return response;
-    } catch (error: any) {
-      console.log('Backend not available, simulating order status update for demo');
-      return { 
-        data: { 
-          id, 
-          status, 
-          updatedAt: new Date().toISOString()
-        } 
-      };
-    }
+  updateOrder: async (id: string, data: any) => {
+    const cacheKey = `get:${api.defaults.baseURL}/orders`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.put(`/orders/${id}`, data);
   },
+  updateOrderStatus: async (orderId: string, status: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/orders`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.put(`/orders/${orderId}/status`, { status });
+  },
+  deleteOrder: async (id: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/orders`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.delete(`/orders/${id}`);
+  }
 };
 
-// Dashboard API endpoints
-export const dashboardApi = {
-  getSellerOrders: async () => {
+export const ratingsApi = {
+  getRatings: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/ratings`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
     try {
-      const response = await api.get('/dashboard/seller/orders');
+      const response = await api.get('/ratings');
       return response;
     } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: [] };
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: [] });
     }
   },
-  getSellerStats: async () => {
-    try {
-      const response = await api.get('/dashboard/seller/stats');
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { 
-        data: {
-          totalOrders: 0,
-          totalRevenue: 0,
-          activeProducts: 0,
-          averageRating: 0
-        }
-      };
-    }
+  createRating: async (data: any) => {
+    const cacheKey = `get:${api.defaults.baseURL}/ratings`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.post('/ratings', data);
   },
+  updateRating: async (id: string, data: any) => {
+    const cacheKey = `get:${api.defaults.baseURL}/ratings`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.put(`/ratings/${id}`, data);
+  },
+  deleteRating: async (id: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/ratings`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.delete(`/ratings/${id}`);
+  }
 };
 
-// Admin API endpoints
 export const adminApi = {
-  getUsers: async () => {
-    try {
-      const response = await api.get('/admin/users');
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: [] };
-    }
-  },
-  getSellers: async () => {
-    try {
-      const response = await api.get('/admin/sellers');
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: mockSellers };
-    }
-  },
-  getOrders: async () => {
-    try {
-      const response = await api.get('/admin/orders');
-      return response;
-    } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { data: [] };
-    }
-  },
   getDashboard: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/admin/dashboard`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
     try {
       const response = await api.get('/admin/dashboard');
       return response;
     } catch (error) {
-      console.log('Backend not available, returning mock data');
-      return { 
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ 
         data: {
-          totalUsers: 0,
-          totalSellers: 0,
-          totalProducts: 0,
-          totalOrders: 0
+          totalUsers: 0, 
+          totalSellers: 0, 
+          totalProducts: 0, 
+          totalOrders: 0,
+          recentOrders: [],
+          topSellers: []
         }
-      };
+      });
     }
   },
-  updateSellerStatus: async (id: number, status: string) => {
+  getUsers: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/admin/users`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
     try {
-      const response = await api.patch(`/admin/sellers/${id}/status`, { status });
+      const response = await api.get('/admin/users');
       return response;
-    } catch (error: any) {
-      console.log('Backend not available, simulating seller status update for demo');
-      return { 
-        data: { 
-          id, 
-          status, 
-          updatedAt: new Date().toISOString()
-        } 
-      };
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: [] });
     }
   },
+  getSellers: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/admin/sellers`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/admin/sellers');
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: [] });
+    }
+  },
+  getOrders: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/admin/orders`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/admin/orders');
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: [] });
+    }
+  },
+  updateSellerStatus: async (sellerId: string, status: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/admin/sellers`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.put(`/admin/sellers/${sellerId}/status`, { status });
+  },
+  deleteUser: async (userId: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/admin/users`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.delete(`/admin/users/${userId}`);
+  },
+  deleteSeller: async (sellerId: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/admin/sellers`;
+    cache.delete(cacheKey); // Invalidate cache
+    return api.delete(`/admin/sellers/${sellerId}`);
+  }
+};
+
+export const dashboardApi = {
+  getSellerOrders: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/dashboard/orders`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/dashboard/orders');
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ data: [] });
+    }
+  },
+  getSellerStats: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/dashboard/stats`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/dashboard/stats');
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ 
+        data: {
+          totalOrders: 0, 
+          totalRevenue: 0, 
+          totalProducts: 0,
+          pendingOrders: 0
+        } 
+      });
+    }
+  }
+};
+
+export const miniAppApi = {
+  getHomeData: async () => {
+    const cacheKey = `get:${api.defaults.baseURL}/mini-app/home`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/mini-app/home');
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      return Promise.resolve({ 
+        data: { 
+          products: mockProducts,
+          sellers: mockSellers
+        } 
+      });
+    }
+  },
+  searchProducts: async (query: string) => {
+    const cacheKey = `get:${api.defaults.baseURL}/mini-app/search?q=${query}`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) return Promise.resolve({ data: cachedData });
+    
+    try {
+      const response = await api.get('/mini-app/search', { params: { q: query } });
+      return response;
+    } catch (error) {
+      console.warn('API call failed, using mock data');
+      const filteredProducts = mockProducts.filter(p => 
+        p.description.toLowerCase().includes(query.toLowerCase())
+      );
+      return Promise.resolve({ data: filteredProducts });
+    }
+  }
 };

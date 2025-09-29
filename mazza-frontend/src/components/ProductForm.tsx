@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Package, Clock, DollarSign, Tag, Store } from 'lucide-react';
+import { ArrowLeft, Clock, DollarSign, Store } from 'lucide-react';
 import { productsApi, sellersApi } from '../services/api';
 import { CreateProductDto, ProductCategory } from '../types';
 import Notification, { NotificationProps } from './Notification';
@@ -55,7 +55,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ mode }) => {
 
   const loadProduct = async () => {
     try {
-      const response = await productsApi.getProductById(Number(id));
+      const response = await productsApi.getProductById(String(id));
       const product = response.data;
       
       setFormData({
@@ -67,8 +67,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ mode }) => {
         availableFrom: product.availableFrom ? new Date(product.availableFrom).toISOString().slice(0, 16) : '',
         category: product.category || ProductCategory.OTHER,
       });
-    } catch (err) {
-      console.error('Failed to load product:', err);
+    } catch (error) {
+      console.error('Failed to load product:', error);
       setError('Failed to load product details');
     }
   };
@@ -102,31 +102,27 @@ const ProductForm: React.FC<ProductFormProps> = ({ mode }) => {
 
       console.log('ProductForm: Submitting product data:', productData);
 
-      if (mode === 'create') {
+      if (mode === 'edit' && id) {
+        const response = await productsApi.updateProduct(String(id), productData);
+        console.log('ProductForm: Product updated successfully:', response.data);
+        showNotification(
+          'success',
+          'Success',
+          'Product updated successfully!'
+        );
+        setTimeout(() => {
+          navigate('/seller-dashboard');
+        }, 2000);
+      } else {
         const response = await productsApi.createProduct(productData);
         console.log('ProductForm: Product created successfully:', response.data);
         showNotification(
           'success',
-          'Product Created Successfully!',
-          'Your product has been added to your store. It will use your business image.'
+          'Success',
+          'Product created successfully!'
         );
-        
-        // Navigate after a short delay to let user see the notification
         setTimeout(() => {
-          navigate('/seller');
-        }, 2000);
-      } else if (mode === 'edit' && id) {
-        const response = await productsApi.updateProduct(Number(id), productData);
-        console.log('ProductForm: Product updated successfully:', response.data);
-        showNotification(
-          'success',
-          'Product Updated Successfully!',
-          'Your product has been updated with the new information.'
-        );
-        
-        // Navigate after a short delay to let user see the notification
-        setTimeout(() => {
-          navigate('/seller');
+          navigate('/seller-dashboard');
         }, 2000);
       }
     } catch (err: any) {
