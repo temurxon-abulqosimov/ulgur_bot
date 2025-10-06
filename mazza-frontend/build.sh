@@ -1,0 +1,4 @@
+#!/bin/bash
+export DISABLE_ESLINT_PLUGIN=true
+export GENERATE_SOURCEMAP=false
+react-scripts build

@@ -1,0 +1,1374 @@
+{
+	"info": {
+		"_postman_id": "afe02701-5eca-4d20-840d-ad6651a39d15",
+		"name": "MAZZA",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43245246"
+	},
+	"item": [
+		{
+			"name": "PRODUCTS",
+			"item": [
+				{
+					"name": "get all products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/products",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get product by location",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/products/nearby?lat=41.333073&lng=69.26662",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"products",
+								"nearby"
+							],
+							"query": [
+								{
+									"key": "lat",
+									"value": "41.333073"
+								},
+								{
+									"key": "lng",
+									"value": "69.26662"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get products by seller id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/products/seller/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"products",
+								"seller",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get product by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/products/3",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"products",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UPDATE PRODUCT",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEyLCJ0ZWxlZ3JhbUlkIjoiOTk5ODg4Nzc3Iiwicm9sZSI6IlNFTExFUiIsImlhdCI6MTc1ODYxMTM2OSwiZXhwIjoxNzU4NjE0OTY5fQ.6J6K2RHXqxjs9zgQxMxTBDrLg4rQnW19F3-mporDPSI",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"price\":27000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/products/4",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"products",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CREATE A PRODUCT",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEyLCJ0ZWxlZ3JhbUlkIjoiOTk5ODg4Nzc3Iiwicm9sZSI6IlNFTExFUiIsImlhdCI6MTc1ODYxMTM2OSwiZXhwIjoxNzU4NjE0OTY5fQ.6J6K2RHXqxjs9zgQxMxTBDrLg4rQnW19F3-mporDPSI",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Fresh Pizza Margherita\",\r\n  \"price\": 25000,\r\n  \"originalPrice\": 30000,\r\n  \"description\": \"Delicious pizza with fresh tomatoes and mozzarella\",\r\n  \"availableUntil\": \"2024-01-15T22:00:00.000Z\",\r\n  \"code\": \"PIZZA1\",\r\n  \"isActive\": true,\r\n  \"quantity\": 50\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/products",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LOGIN AS ADMIN",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEyLCJ0ZWxlZ3JhbUlkIjoiOTk5ODg4Nzc3Iiwicm9sZSI6IlNFTExFUiIsImlhdCI6MTc1ODYxMTM2OSwiZXhwIjoxNzU4NjE0OTY5fQ.6J6K2RHXqxjs9zgQxMxTBDrLg4rQnW19F3-mporDPSI",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "telegramId",
+									"value": "794464667",
+									"type": "text"
+								},
+								{
+									"key": "role",
+									"value": "ADMIN",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "admin123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "SELLER",
+			"item": [
+				{
+					"name": "GET ALL SELLERS",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/sellers",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"sellers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET SELLERS BY LOCATION",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/sellers/nearby?lat=41.333073&lng=69.26662",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"sellers",
+								"nearby"
+							],
+							"query": [
+								{
+									"key": "lat",
+									"value": "41.333073"
+								},
+								{
+									"key": "lng",
+									"value": "69.26662"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET SELLER BY ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/sellers/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"sellers",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "RATINGS",
+			"item": [
+				{
+					"name": "GET RATING BY PRODUCT ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/ratings/product/3",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"ratings",
+								"product",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET AVARAGE RATING FOR A PRODUCT",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/ratings/product/3/average",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"ratings",
+								"product",
+								"3",
+								"average"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET RATING BY SELLER ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/ratings/seller/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"ratings",
+								"seller",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET AVARAGE RATING FOR A SELLER",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/ratings/seller/1/average",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"ratings",
+								"seller",
+								"1",
+								"average"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AUTHENTICATION",
+			"item": [
+				{
+					"name": "LOGIN",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"telegramId\": \"999888777\",\r\n  \"role\": \"USER\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "REGISTER",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "telegramId",
+									"value": "999888777",
+									"type": "text"
+								},
+								{
+									"key": "role",
+									"value": "USER",
+									"type": "text"
+								},
+								{
+									"key": "phoneNumber",
+									"value": "+998901234567",
+									"type": "text"
+								},
+								{
+									"key": "language",
+									"value": "uz",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/auth/register",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "REFRESH TOKEN",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "refresh_token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsInRlbGVncmFtSWQiOiIxMjM0NTY3ODkiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODQ1MzUyMSwiZXhwIjoxNzU5MDU4MzIxfQ.3McNEY0YxtzyTC8HtNt6xMfVLU3XxEcfra2B3AnNWpY",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "refresh_token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsInRlbGVncmFtSWQiOiIxMjM0NTY3ODkiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODQ1MzkyNywiZXhwIjoxNzU5MDU4NzI3fQ.QqlDDZm2BSKOQxe9ZzCaLPUUbZAqcPn9peEmq2MwjJA",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/auth/refresh?refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsInRlbGVncmFtSWQiOiIxMjM0NTY3ODkiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODQ1MzUyMSwiZXhwIjoxNzU5MDU4MzIxfQ.3McNEY0YxtzyTC8HtNt6xMfVLU3XxEcfra2B3AnNWpY",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"auth",
+								"refresh"
+							],
+							"query": [
+								{
+									"key": "refresh_token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsInRlbGVncmFtSWQiOiIxMjM0NTY3ODkiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODQ1MzUyMSwiZXhwIjoxNzU5MDU4MzIxfQ.3McNEY0YxtzyTC8HtNt6xMfVLU3XxEcfra2B3AnNWpY"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET OWN PROFILE",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsInRlbGVncmFtSWQiOiIxMjM0NTY3ODkiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODQ1NDI5MiwiZXhwIjoxNzU4NDU3ODkyfQ.JKb-v5BUS0sXtO1Q_Y3iBmdbA4KTK04vpRVnADY08_8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"telegramId\": \"123456789\",\r\n  \"role\": \"USER\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/auth/me",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"auth",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LOG OUT",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsInRlbGVncmFtSWQiOiIxMjM0NTY3ODkiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODQ1NDI5MiwiZXhwIjoxNzU4NDU3ODkyfQ.JKb-v5BUS0sXtO1Q_Y3iBmdbA4KTK04vpRVnADY08_8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"telegramId\": \"123456789\",\r\n  \"role\": \"USER\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/auth/logout",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LOGIN AS A SELLER",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODU0MTQ0NCwiZXhwIjoxNzU4NTQ1MDQ0fQ.NaNCD3eXEkHcc77S4OG2l1GRLrPqazZVxi_rbTLv0D4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"telegramId\": \"999888777\",\r\n  \"role\": \"SELLER\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "REGISTER AS A SELLER",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODYxOTE0MiwiZXhwIjoxNzU4NjIyNzQyfQ.TWLxU_ACn9reeX-lrPocYOFf8JaJQmhS3ZkJIEagSR4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"telegramId\": \"999888777\",\r\n  \"phoneNumber\": \"+998901234067\",\r\n  \"businessName\": \"My Restaurant\",\r\n  \"businessType\": \"restaurant\",\r\n  \"language\": \"uz\",\r\n  \"location\": {\r\n    \"latitude\": 41.311081,\r\n    \"longitude\": 69.240562\r\n  },\r\n  \"opensAt\": 480,\r\n  \"closesAt\": 1320\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/sellers",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"sellers"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "USER",
+			"item": [
+				{
+					"name": "GET ALL USERS",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInRlbGVncmFtSWQiOiI3OTQ0NjQ2NjciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTg2MTM4NTMsImV4cCI6MTc1ODYxNzQ1M30.9aM92837Bx_YyW9SYq4aKzEHINxrgWQKDlILlzVeMC8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"telegramId\": \"123456789\",\r\n  \"role\": \"USER\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/users",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET USER BY TELEGRAM ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInRlbGVncmFtSWQiOiI3OTQ0NjQ2NjciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTg2MTM4NTMsImV4cCI6MTc1ODYxNzQ1M30.9aM92837Bx_YyW9SYq4aKzEHINxrgWQKDlILlzVeMC8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"telegramId\": \"123456789\",\r\n  \"role\": \"USER\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/users/admin/telegram/7577215779",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"users",
+								"admin",
+								"telegram",
+								"7577215779"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET OWN PROFILE OF USER",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODYxNTA4NSwiZXhwIjoxNzU4NjE4Njg1fQ.Nz8koBHU1TCgvwNBgv_pE8diVceLpG3E_zTIVg6V6FE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"telegramId\": \"123456789\",\r\n  \"role\": \"USER\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/users/me",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UPDATE USER PROFILE",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODYxNTA4NSwiZXhwIjoxNzU4NjE4Njg1fQ.Nz8koBHU1TCgvwNBgv_pE8diVceLpG3E_zTIVg6V6FE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "language",
+									"value": "ru",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/users/3",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"users",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE USER PROFILE",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODYxNTA4NSwiZXhwIjoxNzU4NjE4Njg1fQ.Nz8koBHU1TCgvwNBgv_pE8diVceLpG3E_zTIVg6V6FE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "language",
+									"value": "ru",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/users/3",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"users",
+								"3"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ORDERS",
+			"item": [
+				{
+					"name": "GET ALL ORDERS (admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInRlbGVncmFtSWQiOiI3OTQ0NjQ2NjciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTg2MTM4NTMsImV4cCI6MTc1ODYxNzQ1M30.9aM92837Bx_YyW9SYq4aKzEHINxrgWQKDlILlzVeMC8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/orders",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET ORDERS BY SELLER",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInRlbGVncmFtSWQiOiI3OTQ0NjQ2NjciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTg2MTM4NTMsImV4cCI6MTc1ODYxNzQ1M30.9aM92837Bx_YyW9SYq4aKzEHINxrgWQKDlILlzVeMC8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/orders/admin/seller/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"orders",
+								"admin",
+								"seller",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET MY ORDERS (SELLER)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEyLCJ0ZWxlZ3JhbUlkIjoiOTk5ODg4Nzc3Iiwicm9sZSI6IlNFTExFUiIsImlhdCI6MTc1ODYxOTY4MCwiZXhwIjoxNzU4NjIzMjgwfQ.H_rlU5rqsIrC0IRwMreHhnF-r0gvh3Fr3HUOtdEHJhs",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/orders/seller/my",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"orders",
+								"seller",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET ORDERS (USER OR ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODYxOTk0NywiZXhwIjoxNzU4NjIzNTQ3fQ.8nAlNDTHcaiIQK7A59UK_H_SBpbsHcKNwkJ6zHDScRM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/orders/user/999888777",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"orders",
+								"user",
+								"999888777"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET MY ORDERS (USER)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODYxOTk0NywiZXhwIjoxNzU4NjIzNTQ3fQ.8nAlNDTHcaiIQK7A59UK_H_SBpbsHcKNwkJ6zHDScRM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/orders/my",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"orders",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET ORDER BY CODE (ADMIN OR USER)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODYxOTk0NywiZXhwIjoxNzU4NjIzNTQ3fQ.8nAlNDTHcaiIQK7A59UK_H_SBpbsHcKNwkJ6zHDScRM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/orders/code/5OBWNH",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"orders",
+								"code",
+								"5OBWNH"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CREATE ORDER (USER)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODYxOTk0NywiZXhwIjoxNzU4NjIzNTQ3fQ.8nAlNDTHcaiIQK7A59UK_H_SBpbsHcKNwkJ6zHDScRM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"productId\": 3,\r\n  \"quantity\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/orders/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"orders",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UPDATE ORDER STATUS ( SELLER OR ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEyLCJ0ZWxlZ3JhbUlkIjoiOTk5ODg4Nzc3Iiwicm9sZSI6IlNFTExFUiIsImlhdCI6MTc1ODYyMjI4MSwiZXhwIjoxNzU4NjI1ODgxfQ.Wz9GuBDFm5LxHZbxciAufS1VrvWJWgHMYFjIpQ53e3M",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"status\": \"confirmed\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/orders/1/status",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"orders",
+								"1",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ORDER (USER)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODY0MjU3NCwiZXhwIjoxNzU4NjQ2MTc0fQ.5yk0WgJcVQF931FnOIbud5Q7_PlNInaKZnQK1U_5_fM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"status\": \"confirmed\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/orders/2",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"orders",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "RATINGS",
+			"item": [
+				{
+					"name": "GET ALL RATINGS (ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInRlbGVncmFtSWQiOiI3OTQ0NjQ2NjciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTg2MjI4MjksImV4cCI6MTc1ODYyNjQyOX0.EmF6YvizR4Snr4NZcZsUhobpzViQf-2vLgeFg8EqBrI",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/ratings",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"ratings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET RATINGS BY USER ID (ADMIN ONLY)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInRlbGVncmFtSWQiOiI3OTQ0NjQ2NjciLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTg2MjI4MjksImV4cCI6MTc1ODYyNjQyOX0.EmF6YvizR4Snr4NZcZsUhobpzViQf-2vLgeFg8EqBrI",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/webapp/ratings/admin/user/1",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"ratings",
+								"admin",
+								"user",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET MY RATINGS (USER)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODY0MjU3NCwiZXhwIjoxNzU4NjQ2MTc0fQ.5yk0WgJcVQF931FnOIbud5Q7_PlNInaKZnQK1U_5_fM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/ratings/my",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"ratings",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CREATE RATING (USER)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODY0MjU3NCwiZXhwIjoxNzU4NjQ2MTc0fQ.5yk0WgJcVQF931FnOIbud5Q7_PlNInaKZnQK1U_5_fM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"rating\": 5,\r\n  \"comment\": \"Excellent product! Very fresh and tasty.\",\r\n  \"productId\": 3,\r\n  \"type\": \"product\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/ratings",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"ratings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UPDATE RATING (USER)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODY0MjU3NCwiZXhwIjoxNzU4NjQ2MTc0fQ.5yk0WgJcVQF931FnOIbud5Q7_PlNInaKZnQK1U_5_fM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"rating\": 5,\r\n  \"comment\": \"Very fresh and tasty.\",\r\n  \"productId\": 3,\r\n  \"type\": \"product\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/ratings/5",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"ratings",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE RATING (USER)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQsInRlbGVncmFtSWQiOiI5OTk4ODg3NzciLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc1ODY0MjU3NCwiZXhwIjoxNzU4NjQ2MTc0fQ.5yk0WgJcVQF931FnOIbud5Q7_PlNInaKZnQK1U_5_fM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"rating\": 5,\r\n  \"comment\": \"Very fresh and tasty.\",\r\n  \"productId\": 3,\r\n  \"type\": \"product\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/webapp/ratings/5",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"webapp",
+								"ratings",
+								"5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

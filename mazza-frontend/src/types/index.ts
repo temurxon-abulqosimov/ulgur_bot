@@ -174,3 +174,6 @@ export interface UpdateRatingDto {
   rating?: number;
   comment?: string;
 }
+
+
+

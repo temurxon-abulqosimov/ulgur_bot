@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, User, Store, Phone, Clock } from 'lucide-react';
 import BottomNavigation from '../components/BottomNavigation';
@@ -48,7 +48,7 @@ const Register: React.FC = () => {
       console.log('Attempting to register user with data:', userData);
       const response = await usersApi.createUser(userData);
       console.log('Registration successful:', response);
-      navigate('/profile');
+      // Show success message with Open Mini App button
     } catch (err: any) {
       console.error('Registration failed:', err);
       console.error('Error response:', err.response?.data);
@@ -80,7 +80,7 @@ const Register: React.FC = () => {
       };
 
       await sellersApi.createSeller(sellerData);
-      navigate('/profile');
+      // Show success message with Open Mini App button
     } catch (err) {
       setError('Failed to register as seller. Please try again.');
     } finally {
@@ -183,7 +183,7 @@ const Register: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
                 <option value="uz">O'zbek</option>
-                <option value="ru">Русский</option>
+                <option value="ru">Р СѓСЃСЃРєРёР№</option>
               </select>
             </div>
 
@@ -274,3 +274,4 @@ const Register: React.FC = () => {
 };
 
 export default Register;
+

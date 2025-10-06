@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 
 // Use Railway backend URL
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://ulgur-backend-production-53b2.up.railway.app/webapp';
@@ -20,15 +20,14 @@ api.interceptors.request.use(
   (config) => {
     // Add Telegram init data if available
     const initData = localStorage.getItem('telegramInitData');
-    console.log('Telegram init data:', initData);
     if (initData) {
       config.headers['x-telegram-init-data'] = initData;
     }
+    
     // Add JWT token if available
     const token = localStorage.getItem('authToken');
-    console.log('Auth token:', token);
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers['Authorization'] = Bearer ${token};
     }
     
     return config;
@@ -511,8 +510,6 @@ export const miniAppApi = {
 
 
 
-<<<<<<< HEAD
-=======
 
 
 
@@ -531,9 +528,3 @@ export const miniAppApi = {
 
 
 
-
-
-
-
-
->>>>>>> e1835f2 (completed)
